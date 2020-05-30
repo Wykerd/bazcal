@@ -1,3 +1,10 @@
-runWithEnv.sh
+# Modules
 node_modules/
+
+# Build outputs
 dist/
+
+# Keys and such
+runWithEnv.sh
+docker-compose.yml
+keys/

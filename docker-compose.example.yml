@@ -1,0 +1,12 @@
+# Copy to docker-compose.yml
+version: '3.1'
+
+services: 
+    api:
+        build: .
+        restart: unless-stopped
+        environment: 
+            PORT: '80'
+            API_ENDPOINT: https://api.hypixel.net/skyblock/bazaar
+        ports:
+            - 80:80

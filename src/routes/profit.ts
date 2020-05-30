@@ -5,7 +5,16 @@ import { fill_dataset, profit_split } from "../utils";
 
 export const ProfitLookup : express.RequestHandler = async (req, res, next) => {
     try {
-        const json = await (await fetch(`${process.env.API_ENDPOINT}?key=${process.env.API_KEY}`)).json();
+        const api_res = await fetch(`${process.env.API_ENDPOINT}?key=${req.body._user.api_key}`);
+        const json = await api_res.json();
+
+        if (api_res.status !== 200) {
+            return res.status(500).json({
+                message: 'Hypixel API error',
+                error: json
+            });
+        }
+        
         const dataset = fill_dataset(json?.products);
         if (dataset.length === 0) return next(createError(404, 'Nothing found.'));
         const split = profit_split(parseInt(req.params.bal), dataset, parseInt(req.params.timeframe));

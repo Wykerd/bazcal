@@ -1,4 +1,4 @@
-import express from "express";
+import express, { ErrorRequestHandler } from "express";
 import log from "morgan";
 import cors, { CorsOptions } from "cors";
 import routes from './routes';
@@ -24,3 +24,9 @@ app.use('/api', routes);
 app.listen(process.env.PORT || '9100', () => {
     console.log('Server has started');
 });
+
+const errorhandler : ErrorRequestHandler = (err, _req, res) => {
+    res.status(err.status || 500).json({ message: err.message });
+}
+
+app.use(errorhandler);
