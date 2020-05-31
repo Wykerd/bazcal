@@ -5,7 +5,7 @@ import { search } from "../utils";
 
 export const ItemLookup : express.RequestHandler = async (req, res, next) => {
     try {
-        const api_res = await APICache.findOne().sort({ timestamp: 1 }).exec();
+        const api_res = await APICache.findOne().sort({ timestamp: -1 }).exec();
 
         if (!api_res) return next(createError(404, 'Could not find cached response'));
 
