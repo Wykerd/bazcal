@@ -6,5 +6,4 @@ dist/
 
 # Keys and such
 runWithEnv.sh
-docker-compose.yml
 keys/

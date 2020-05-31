@@ -2,6 +2,10 @@ import express, { ErrorRequestHandler } from "express";
 import log from "morgan";
 import cors, { CorsOptions } from "cors";
 import routes from './routes';
+import mongoose from 'mongoose';
+
+mongoose.Promise = global.Promise;
+
 const app = express();
 
 const whitelist : string[] = [ "http://localhost:9100", process.env.PUBLIC_HOST || "http://localhost" ];
@@ -21,12 +25,18 @@ app.use(log('dev'));
 
 app.use('/api', routes);
 
-app.listen(process.env.PORT || '9100', () => {
-    console.log('Server has started');
-});
+mongoose.connect('mongodb://root:example@mongo:27017/', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true })
+    .then(async () => {
+        app.listen(process.env.PORT || '9100', () => {
+            console.log('Server has started');
+        });
 
-const errorhandler : ErrorRequestHandler = (err, _req, res) => {
-    res.status(err.status || 500).json({ message: err.message });
-}
-
-app.use(errorhandler);
+        const errorhandler : ErrorRequestHandler = (err, _req, res, _next) => {
+            res.status(err.status || 500).json({ message: err.message });
+        }
+        
+        app.use(errorhandler);
+    })
+    .catch(err => {
+        throw err;
+    });
