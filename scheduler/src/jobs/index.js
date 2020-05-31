@@ -13,7 +13,8 @@ export function CachingJobs (agenda) {
             const json = await api_res.json();
 
             const cache = new APICache({
-                response: json
+                response: json,
+                timestamp: new Date()
             });
 
             await cache.save();

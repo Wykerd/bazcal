@@ -2,8 +2,7 @@ import mongoose from 'mongoose'
 
 const cacheSchema = new mongoose.Schema({
     timestamp: {
-        type: Date,
-        default: new Date()
+        type: Date
     },
     response: {
         type: {}
