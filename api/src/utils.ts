@@ -118,6 +118,5 @@ export function profit_split(balance : number, dataset : ItemLookupResult[], tim
         }
     }
     if (!most_profit_split) return undefined;
-    most_profit_split.profit_array.splice(6, 200);
-    return most_profit_split
+    return { splits: most_profit_split.splits, profit_array: most_profit_split.profit_array.splice(0, 6) };
 }
