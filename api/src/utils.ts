@@ -1,3 +1,5 @@
+import { CacheDocument } from "./models/cache"
+
 export interface ItemLookupResult {
     name: string;
     buy: number;
@@ -67,16 +69,16 @@ function limit(val : number, min : number, max : number) {
 }
 
 function profit_calculation(balance: number, splits: number, dataset: ItemLookupResult[], time: number) : ProfitSplitResult {
-    var split_bal = balance / splits
-    var profit_array : ItemProfitResult[] = []
-    for (var item of dataset) {
-        var profit_per = item.sell - item.buy
-        var profit_percent = profit_per / item.buy
+    const split_bal = balance / splits
+    const profit_array : ItemProfitResult[] = []
+    for (const item of dataset) {
+        const profit_per = item.sell - item.buy
+        const profit_percent = profit_per / item.buy
 
-        var t_volume_ph = (Math.min(item.buy_volume, item?.sell_volume ?? 0) / 10080) * time
-        var eff_volume_ph = Math.floor(limit(t_volume_ph, 0, split_bal / item.buy))
+        const t_volume_ph = (Math.min(item.buy_volume, item?.sell_volume ?? 0) / 10080) * time
+        const eff_volume_ph = Math.floor(limit(t_volume_ph, 0, split_bal / item.buy))
 
-        var order_profit = Math.round(profit_per * eff_volume_ph)
+        const order_profit = Math.round(profit_per * eff_volume_ph)
 
         profit_array.push({
             name: item.name,
@@ -103,6 +105,84 @@ function sum(input: any[], splits: number) {
         total += Number(input[i].Profit)
     }
     return total
+}
+
+interface VolitilityStats {
+    mean: number;
+    std: number;
+}
+
+interface VolitilityInfo {
+    buy: VolitilityStats, 
+    sell: VolitilityStats, 
+    volume: VolitilityStats, 
+    svolume: VolitilityStats,
+    count: number
+}
+
+interface VolitilityDataMap {
+    count: number
+    buy: [number,number], 
+    sell: [number,number], 
+    volume: [number,number], 
+    svolume: [number,number]
+}
+
+export function volitility_calc (docs : CacheDocument[]) : { [key: string]: VolitilityInfo } {
+    const sorted : { [key: string]: VolitilityDataMap } = {};
+    docs.forEach(doc => {
+        for (const product in (doc.response?.products ?? {})) {
+            if (doc.response?.products?.hasOwnProperty(product)) {
+                const buy : number = parseFloat(doc.response?.products[product]?.sell_summary?.[0]?.pricePerUnit);
+                const sell : number = parseFloat(doc.response?.products[product]?.buy_summary?.[0]?.pricePerUnit);
+                const volume : number = parseFloat(doc.response?.products[product]?.['quick_status']?.['buyMovingWeek']);
+                const svolume : number = parseFloat(doc.response?.products[product]?.['quick_status']?.['sellMovingWeek']);
+                
+                if (!sorted[product]) sorted[product] = { buy: [0,0], sell: [0,0], volume: [0,0], svolume: [0,0], count: 0 };
+
+                sorted[product].count++;
+                sorted[product].buy[0] += buy;
+                sorted[product].sell[0] += sell;
+                sorted[product].svolume[0] += svolume;
+                sorted[product].volume[0] += volume;
+                sorted[product].buy[1] += buy * buy;
+                sorted[product].sell[1] += sell * sell;
+                sorted[product].svolume[1] += svolume * svolume;
+                sorted[product].volume[1] += volume * volume;
+            }
+        }
+    });
+
+    const ret : { [key: string]: VolitilityInfo } = {}; 
+
+    Object.keys(sorted).forEach(key => {
+        const item = sorted[key];
+        const n = item.count;
+
+        const std_calc = (num : [number,number]) => Math.sqrt((num[1]/n)-((num[0] / n) * (num[0] / n)))
+
+        ret[key] = {
+            buy: {
+                mean: item.buy[0] / n,
+                std: std_calc(item.buy)
+            },
+            sell: {
+                mean: item.sell[0] / n,
+                std: std_calc(item.sell)
+            },
+            svolume: {
+                mean: item.svolume[0] / n,
+                std: std_calc(item.svolume)
+            },
+            volume: {
+                mean: item.volume[0] / n,
+                std: std_calc(item.volume)
+            },
+            count: n
+        }
+    });
+
+    return ret;
 }
 
 export function profit_split(balance : number, dataset : ItemLookupResult[], time : number) : ProfitSplitResult | undefined {

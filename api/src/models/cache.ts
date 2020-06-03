@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-interface CacheDocument extends mongoose.Document {
+export interface CacheDocument extends mongoose.Document {
     timestamp : Date;
     response: any;
 }
