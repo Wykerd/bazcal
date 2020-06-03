@@ -17,7 +17,7 @@ mongoose.connect('mongodb://root:example@mongo:27017/', { useNewUrlParser: true,
 
         if (active_cache_jobs.length > 0) console.log('Found existing caching job', active_cache_jobs.length, active_cache_jobs[0])
         else {
-            await agenda.every('3 minutes', 'cache:api_res');
+            await agenda.every('1 minutes', 'cache:api_res');
             console.log('Created new caching job');
         }
     })

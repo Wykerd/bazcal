@@ -17,10 +17,22 @@ export function CachingJobs (agenda) {
                 timestamp: new Date()
             });
 
-            await cache.save();
+            const saved = await cache.save();
+
+            await agenda.schedule('in a week', 'cache:purge', { cache_id: saved._id });
         } catch (err) {
             console.error('JOB FAILED', err);
             job.fail(err);
         }
-    })
+    });
+
+    agenda.define('cache:purge', async job => {
+        try {
+            await APICache.findByIdAndDelete(job.attrs.data._id);
+            await job.remove();
+        } catch (error) {
+            console.error('JOB FAILED', err);
+            job.fail(err);
+        }
+    });
 }
