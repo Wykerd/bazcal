@@ -27,9 +27,9 @@ export function CachingJobs (agenda) {
                 const prod = doc.response?.products[product];
                 if (!prod) continue;
                 regen[product] = {};
-                regen[product].buy = prod.quick_status?.buyMovingWeek ?? 0;
+                regen[product].buy = prod.sell_summary?.[0]?.pricePerUnit ?? 0;
                 regen[product].sell = prod.buy_summary?.[0]?.pricePerUnit ?? 0;
-                regen[product].volume = prod.sell_summary?.[0]?.pricePerUnit ?? 0;
+                regen[product].volume = prod.quick_status?.buyMovingWeek ?? 0;
                 regen[product].svolume = prod.quick_status?.sellMovingWeek ?? 0;
                 regen[product].count = 1;
             }
@@ -54,9 +54,9 @@ export function CachingJobs (agenda) {
                 const prod = doc.response?.products[product];
                 if (!prod) continue;
                 regen[product] = {};
-                regen[product].buy = -prod.quick_status?.buyMovingWeek ?? 0;
+                regen[product].buy = -prod.sell_summary?.[0]?.pricePerUnit ?? 0;
                 regen[product].sell = -prod.buy_summary?.[0]?.pricePerUnit ?? 0;
-                regen[product].volume = -prod.sell_summary?.[0]?.pricePerUnit ?? 0;
+                regen[product].volume = -prod.quick_status?.buyMovingWeek ?? 0;
                 regen[product].svolume = -prod.quick_status?.sellMovingWeek ?? 0;
                 regen[product].count = -1;
             }

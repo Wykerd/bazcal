@@ -1,5 +1,3 @@
-import { CacheDocument } from "./models/cache"
-
 export interface ItemLookupResult {
     name: string;
     buy: number;

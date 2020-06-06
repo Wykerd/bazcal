@@ -1,5 +1,4 @@
 import express from "express";
-import APICache from '../models/cache';
 import createError from "http-errors";
 import fs from 'fs';
 import path from 'path';
