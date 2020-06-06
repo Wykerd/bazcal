@@ -4,6 +4,9 @@ node_modules/
 # Build outputs
 dist/
 
+# Generated data directories
+data/
+
 # Keys and such
 runWithEnv.sh
 keys/

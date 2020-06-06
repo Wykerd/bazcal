@@ -8,6 +8,9 @@ services:
         environment: 
             PORT: '80'
             API_ENDPOINT: https://api.hypixel.net/skyblock/bazaar
+            DATA_DIR: /data
+        volumes: 
+            - ./data:/data
         ports:
             - 80:80
         networks: 
@@ -20,6 +23,9 @@ services:
         environment: 
             API_KEY: d5a0321f-aca1-4dd3-b4ac-2c35ed175787
             API_ENDPOINT: https://api.hypixel.net/skyblock/bazaar
+            DATA_DIR: /data
+        volumes: 
+            - ./data:/data
         networks: 
             - outside
             - backend
