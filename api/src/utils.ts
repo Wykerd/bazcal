@@ -69,6 +69,8 @@ function limit(val : number, min : number, max : number) {
 }
 
 export function profit_calculation(balance: number, dataset: ItemLookupResult[], time: number) : ProfitSplitResult {
+    if (Number.isNaN(balance) || Number.isNaN(time)) return undefined;
+    
     const profit_array : ItemProfitResult[] = []
     for (const item of dataset) {
         const profit = item.sell - item.buy
