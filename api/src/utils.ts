@@ -4,21 +4,19 @@ export interface ItemLookupResult {
     name: string;
     buy: number;
     sell: number;
-    buy_volume: number;
-    sell_volume?: number;
+    volume: number;
+    svolume?: number;
 }
 
 export interface ItemProfitResult {
     name: string,
-    buy_price: number,
-    profit: number,
-    effective_volume: number,
-    profit_percent: number,
+    buy: number, sell: number,
+    volume: number, svolume: number, evolume: number,
+    profit: number, pprofit: number, oprofit: number
 }
 
 export interface ProfitSplitResult {
     profit_array: ItemProfitResult[],
-    splits: number
 }
 
 export function search(product_id: string, products: any) : ItemLookupResult | undefined {
@@ -33,7 +31,7 @@ export function search(product_id: string, products: any) : ItemLookupResult | u
                 name: product_id,
                 buy: typeof buy === 'number' ? buy : -1,
                 sell: typeof sell === 'number' ? sell : -1,
-                buy_volume: typeof volume === 'number' ? volume : -1
+                volume: typeof volume === 'number' ? volume : -1
             };
             return item;
         }
