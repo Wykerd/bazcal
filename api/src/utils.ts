@@ -5,14 +5,19 @@ export interface ItemLookupResult {
     buy: number;
     sell: number;
     volume: number;
-    svolume?: number;
+    svolume: number;
 }
 
 export interface ItemProfitResult {
     name: string,
-    buy: number, sell: number,
-    volume: number, svolume: number, evolume: number,
-    profit: number, pprofit: number, oprofit: number
+    buy: number, 
+    sell: number,
+    volume: number, 
+    svolume: number, 
+    evolume: number,
+    profit: number, 
+    pprofit: number, 
+    oprofit: number
 }
 
 export interface ProfitSplitResult {
@@ -27,11 +32,13 @@ export function search(product_id: string, products: any) : ItemLookupResult | u
             const buy : any = products[product]?.sell_summary?.[0]?.pricePerUnit;
             const sell : any = products[product]?.buy_summary?.[0]?.pricePerUnit;
             const volume : any = products[product]?.['quick_status']?.['buyMovingWeek'];
+            const svolume : any = products[product]?.['quick_status']?.['sellMovingWeek'];
             const item = {
                 name: product_id,
                 buy: typeof buy === 'number' ? buy : -1,
                 sell: typeof sell === 'number' ? sell : -1,
-                volume: typeof volume === 'number' ? volume : -1
+                volume: typeof volume === 'number' ? volume : -1,
+                svolume: typeof svolume === 'number' ? svolume : -1
             };
             return item;
         }
@@ -66,7 +73,7 @@ function limit(val : number, min : number, max : number) {
     return val < min ? min : (val > max ? max : val)
 }
 
-export function profit_calculation(balance: number, dataset: ItemLookupResult[], time: number) : ProfitSplitResult {
+export function profit_calculation(balance: number, dataset: ItemLookupResult[], time: number) : ProfitSplitResult | undefined {
     if (Number.isNaN(balance) || Number.isNaN(time)) return undefined;
     
     const profit_array : ItemProfitResult[] = []
@@ -82,8 +89,12 @@ export function profit_calculation(balance: number, dataset: ItemLookupResult[],
         profit_array.push({
             name: item.name,
             buy: item.buy, sell: item.sell,
-            volume: item.volume, svolume: item.svolume, evolume: eff_volume_ph,
-            profit: profit, pprofit: profit_percent, oprofit: order_profit
+            volume: item.volume, 
+            svolume: item.svolume, 
+            evolume: eff_volume_ph,
+            profit: profit, 
+            pprofit: profit_percent, 
+            oprofit: order_profit
         })
 
         profit_array.sort(function (a, b) {
