@@ -100,5 +100,5 @@ export function profit_calculation(balance: number, dataset: ItemLookupResult[],
         })
     }
 
-    return { profit_array: profit_array.slice(0, 6) }
+    return { profit_array: profit_array }
 }
