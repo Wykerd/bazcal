@@ -26,12 +26,12 @@ export const cache_handler = async () => {
         const json = await api_res.json();
 
         const items = Object.keys(json['products']).map(function (key) {
-            return json['products'][key]['product_id'] === 'ENCHANTED_CARROT_ON_A_STICK' ? undefined : {
+            return {
                 'name': json['products'][key]['product_id'],
-                'buy': json['products'][key]['sell_summary'][0]['pricePerUnit'],
-                'sell': json['products'][key]['buy_summary'][0]['pricePerUnit'],
-                'volume': json['products'][key]['quick_status']['buyMovingWeek'],
-                'svolume': json['products'][key]['quick_status']['sellMovingWeek']
+                'buy': json['products'][key]?.['sell_summary']?.[0]?.['pricePerUnit'] ?? -1,
+                'sell': json['products'][key]?.['buy_summary']?.[0]?.['pricePerUnit'] ?? -1,
+                'volume': json['products'][key]?.['quick_status']?.['buyMovingWeek'] ?? -1,
+                'svolume': json['products'][key]?.['quick_status']?.['sellMovingWeek'] ?? -1
             }
         });
 
@@ -41,6 +41,8 @@ export const cache_handler = async () => {
         const sell_point = [];
 
         for (const item of items) {
+            if (item.name === "ENCHANTED_CARROT_ON_A_STICK") continue;
+
             if (!item_cache[item.name]) {
                 item_cache[item.name] = {
                     buy: item.buy,
@@ -71,13 +73,13 @@ export const cache_handler = async () => {
         console.log(buy_point, sell_point)
 
         for (const item_id of sell_point) {
-            const members = await UserOrder.filter({ orders: { $all: [ item_id ] } });
+            const members = await UserOrder.find({ orders: { $all: [ item_id ] } });
             members.forEach(member => {
                 client.user.get(member.user_id).send(`You need to sell all your ${item_id} right now!`);
             });
         }
 
-        const subscribers = await UserOrder.filter({ subscribed: true });
+        const subscribers = await UserOrder.find({ subscribed: true });
 
         subscribers.forEach(member => {
             client.user.get(member.user_id).send(`${buy_point.join(', ')} is currently at a optimal price to buy.`);
