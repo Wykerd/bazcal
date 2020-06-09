@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@wykerd/discord-framework": "^1.0.5",
+    "agenda": "^3.1.0",
+    "mongoose": "^5.9.18"
+  }
+}

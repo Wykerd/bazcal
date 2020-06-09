@@ -1,25 +1,12 @@
-import Agenda from 'agenda'
+import schedule from 'node-schedule'
 import mongoose from 'mongoose'
-import { CachingJobs } from './jobs'
+import { cache_handler } from './cache';
 
-mongoose.Promise = global.Promise; // use the built in promise lib
+mongoose.Promise = global.Promise
 
 mongoose.connect('mongodb://root:example@mongo:27017/', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true })
     .then(async () => {
-        const agenda = new Agenda({ mongo: mongoose.connection.db, db: { collection: 'agendaJobs' } });
-        
-        CachingJobs(agenda);
-
-        await agenda.start();
-        console.log('Bazcal scheduler running.');
-
-        const active_cache_jobs = await agenda.jobs({ name: 'cache:api_res' });
-
-        if (active_cache_jobs.length > 0) console.log('Found existing caching job', active_cache_jobs.length, active_cache_jobs[0])
-        else {
-            await agenda.every('1 minutes', 'cache:api_res');
-            console.log('Created new caching job');
-        }
+        schedule.scheduleJob('*/30 * * * * *', cache_handler);
     })
     .catch(err => {
         throw err;
