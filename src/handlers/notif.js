@@ -70,7 +70,7 @@ const handler = async (message, args) => {
         })
         await n_mem.save()
     } else if (member.orders.length > 0) {
-        const new_message = await message.author.send('You already another investment pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
+        const new_message = await message.author.send('You already have other investments pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
 
         await new_message.react('👍')
         await new_message.react('👎')
@@ -83,7 +83,7 @@ const handler = async (message, args) => {
             collected = await new_message.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
             const reaction = collected.first()
 
-            if (reaction.emoji.name != '👍') {
+            if (reaction.emoji.name === '👍') {
                 // Update Previous
                 for (let order of orders) {
                     if (!member.orders.includes(order.name)) {

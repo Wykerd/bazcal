@@ -5,7 +5,7 @@ import fs from 'fs'
 import path from 'path'
 import { item_name } from './utils'
 
-const range = 15;
+const range = 12;
 const k = 2 / (range + 1);
 
 export const cache_fp = path.resolve(process.env.DATA_DIR, 'cache.json');
