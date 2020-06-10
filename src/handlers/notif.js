@@ -55,7 +55,7 @@ const handler = async (message, args) => {
     //Converts reaction to orderIDs
     const orders = []
 
-    for (const i in reaction_array) {
+    for (const i of reaction_array) {
         orders.push(sorted_input[i].name)
     }
 
@@ -70,29 +70,34 @@ const handler = async (message, args) => {
         })
         await n_mem.save()
     } else if (member.orders.length > 0) {
-        const new_message = message.author.send('You already another investment pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
+        const new_message = await message.author.send('You already another investment pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
+
+        await new_message.react('👍')
+        await new_message.react('👎')
 
         //Ask if he wants previous orders to be updated or cancelled
         const filter = (reaction, user) => ['👍', '👎'].includes(reaction.emoji.name) && user.id === userID
 
-        const prom = new_message.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] });
-        prom.catch(()=>{})
-        const collected = await prom
-        
-        const reaction = collected.first()
+        let collected;
+        try {
+            collected = await new_message.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+            const reaction = collected.first()
 
-        if (reaction.emoji.name != '👍') {
-            // Update Previous
-            for (let order of orders) {
-                if (!member.orders.includes(order.name)) {
-                    member.orders.push(order)
+            if (reaction.emoji.name != '👍') {
+                // Update Previous
+                for (let order of orders) {
+                    if (!member.orders.includes(order.name)) {
+                        member.orders.push(order)
+                    }
                 }
+                await member.save()
+            } else {
+                //Cancel Previous
+                member.orders = orders
+                await member.save()
             }
-            await member.save()
-        } else {
-            //Cancel Previous
-            member.orders = orders
-            await member.save()
+        } catch (error) {
+            // ignore error
         }
     } else {
         for (let order of orders) {
