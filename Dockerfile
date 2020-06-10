@@ -6,8 +6,8 @@ RUN yarn build
 
 FROM node:lts-alpine
 WORKDIR /usr/bin/api
-COPY package.json .
 COPY yarn.lock .
+COPY *.json ./
 COPY --from=compiler /usr/src/scheduler/dist/ dist
 RUN yarn install --production
 CMD ["yarn", "start"]

@@ -3,8 +3,9 @@ import UserOrder from './models/userSchema'
 import { client } from './client'
 import fs from 'fs'
 import path from 'path'
+import { item_name } from './utils'
 
-const range = 10;
+const range = 15;
 const k = 2 / (range + 1);
 
 export const cache_fp = path.resolve(process.env.DATA_DIR, 'cache.json');
@@ -12,7 +13,7 @@ export const cache_fp = path.resolve(process.env.DATA_DIR, 'cache.json');
 let item_cache = {};
 
 try {
-    item_cache = JSON.stringify(fs.readFileSync(cache_fp, 'utf-8'))
+    item_cache = JSON.parse(fs.readFileSync(cache_fp, 'utf-8'))
 } catch (error) {
     // ignore error
 }
@@ -34,8 +35,6 @@ export const cache_handler = async () => {
                 'svolume': json['products'][key]?.['quick_status']?.['sellMovingWeek'] ?? -1
             }
         });
-
-        //console.log(items);
 
         const buy_point = [];
         const sell_point = [];
@@ -70,20 +69,20 @@ export const cache_handler = async () => {
             }
         }
 
-        console.log(buy_point, sell_point)
-
         for (const item_id of sell_point) {
-            const members = await UserOrder.find({ orders: { $all: [item_id] } });
-            members.forEach(member => {
-                client.user.get(member.user_id).send(`You need to sell all your ${item_id} right now!`);
-            });
+            const members = await UserOrder.find({ orders: item_id });
+            for (const member of members) {
+                client.users.cache.get(member.user_id).send(`You need to sell all your **${item_name(item_id)}** right now! [ Down ${Math.abs(item_cache[item_id].sell - item_cache[item_id].sell_ema).toFixed(2)} ]`);
+                member.orders = member.orders.filter(ord => ord !== item_id);
+                console.log(await member.save());
+            }
         }
 
-        const subscribers = await UserOrder.find({ subscribed: true });
+        /*const subscribers = await UserOrder.find({ subscribed: true });
 
         subscribers.forEach(member => {
-            client.user.get(member.user_id).send(`${buy_point.join(', ')} is currently at a optimal price to buy.`);
-        });
+            client.users.cache.get(member.user_id).send(`${buy_point.join(', ')} is currently at a optimal price to buy.`);
+        });*/
 
         await backupCache();
     } catch (error) {

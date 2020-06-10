@@ -3,7 +3,7 @@ version: '3.1'
 
 services: 
     scheduler:
-        build: ./scheduler
+        build: .
         restart: unless-stopped
         environment: 
             API_KEY: d5a0321f-aca1-4dd3-b4ac-2c35ed175787
