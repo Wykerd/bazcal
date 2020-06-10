@@ -35,7 +35,7 @@ export const cache_handler = async () => {
             }
         });
 
-        console.log(items);
+        //console.log(items);
 
         const buy_point = [];
         const sell_point = [];
@@ -57,7 +57,7 @@ export const cache_handler = async () => {
                 const pre_s_ema = item_cache[item.name].sell_ema;
                 const pre_b = item_cache[item.name].buy;
                 const pre_s = item_cache[item.name].sell;
-                
+
                 item_cache[item.name].buy = item.buy;
                 item_cache[item.name].sell = item.sell;
                 item_cache[item.name].volume = item.volume;
@@ -73,7 +73,7 @@ export const cache_handler = async () => {
         console.log(buy_point, sell_point)
 
         for (const item_id of sell_point) {
-            const members = await UserOrder.find({ orders: { $all: [ item_id ] } });
+            const members = await UserOrder.find({ orders: { $all: [item_id] } });
             members.forEach(member => {
                 client.user.get(member.user_id).send(`You need to sell all your ${item_id} right now!`);
             });

@@ -1,0 +1,15 @@
+{
+    "eslint.alwaysShowStatus": true,
+    "javascript.validate.enable": false,
+    "[javascript]": {
+        "editor.formatOnSave": false,
+    },
+    "[javascriptreact]": {
+        "editor.formatOnSave": false,
+    },
+    // requires only if you use vetur plugin
+    "vetur.validation.script": false,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
+}

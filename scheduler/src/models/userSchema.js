@@ -13,6 +13,6 @@ const userOrderSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     }
-});
+})
 
-export default mongoose.model('UserOrders', userOrderSchema);
+export default mongoose.model('UserOrders', userOrderSchema)
