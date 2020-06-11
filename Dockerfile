@@ -3,6 +3,7 @@ WORKDIR /usr/src/scheduler
 COPY . .
 RUN yarn
 RUN yarn build
+RUN yarn train
 
 FROM node:lts-alpine
 WORKDIR /usr/bin/api
