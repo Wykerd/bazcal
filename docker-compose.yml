@@ -1,12 +1,13 @@
-# Copy to docker-compose.yml
+# Example docker-compose file, just replace the environment variables of the bazcal to the correct ones for you
 version: '3.1'
 
 services: 
-    scheduler:
+    bazcal:
         build: .
         restart: unless-stopped
         environment: 
             API_KEY: d5a0321f-aca1-4dd3-b4ac-2c35ed175787
+            DISCORD_KEY: NTE4NDcyMjM2NjQyOTkyMTI4.XuJgbw.LLRRo1GJGbcqt_1YxBZ8WPz0LAc
             API_ENDPOINT: https://api.hypixel.net/skyblock/bazaar
             DATA_DIR: /data
         volumes: 

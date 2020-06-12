@@ -1,3 +1,6 @@
 # Bazcal Bot
 
-EPIC
+A Discord bot for bazaar trading.
+
+# Backstory
+
