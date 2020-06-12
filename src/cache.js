@@ -88,7 +88,7 @@ export const cache_handler = async () => {
         for (const item_id of sell_point) {
             const members = await UserOrder.find({ orders: item_id });
             for (const member of members) {
-                client.users.cache.get(member.user_id).send(`You need to sell all your **${item_name(item_id)}** right now!`);
+                client.users.cache.get(member.user_id).send(`You need to sell all your **${item_name(item_id)}** right now!`).catch(()=>{});
                 member.orders = member.orders.filter(ord => ord !== item_id);
                 console.log(await member.save());
             }
