@@ -5,9 +5,9 @@ services:
     bazcal:
         build: .
         restart: unless-stopped
-        environment: 
-            API_KEY: d5a0321f-aca1-4dd3-b4ac-2c35ed175787
-            DISCORD_KEY: NTE4NDcyMjM2NjQyOTkyMTI4.XuJgbw.LLRRo1GJGbcqt_1YxBZ8WPz0LAc
+        environment:
+            API_KEY: 00000000-0000-0000-0000-000000000000
+            DISCORD_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
             API_ENDPOINT: https://api.hypixel.net/skyblock/bazaar
             DATA_DIR: /data
         volumes: 
