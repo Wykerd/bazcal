@@ -1385,10 +1385,10 @@
   dependencies:
     xlsx "^0.15.1"
 
-"@wykerd/discord-framework@^1.1.4":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@wykerd/discord-framework/-/discord-framework-1.1.4.tgz#c9b18fd4b70a83679fee521bce099743f377b183"
-  integrity sha512-/ki+8iUf4bNroK8BlNzI76UcyNA1jrzrB8+v1/skZXBSyHOQNK+bwRvQbsd7gm4n75vACZuHD/f8UmwII109uQ==
+"@wykerd/discord-framework@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@wykerd/discord-framework/-/discord-framework-1.1.5.tgz#01b32711d7f1a2113990e401cde754d048ce5658"
+  integrity sha512-E/hGBrzwTckvppRRojD6RsjAG9gvCSHUCzmyKlse2lT5RmyXcHyngyFSmNvZTNKZwmXNQ9IQ8vIuh9bucmuVkA==
   dependencies:
     discord.js "^12.2.0"
     node-nlp "^4.4.0"

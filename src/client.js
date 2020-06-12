@@ -9,7 +9,7 @@ export const client = new Client()
 
 const parser = new CommandParser('!bz')
 
-parser.nlp.must_include = ['bazcal', ' baz ', ' bz '];
+parser.nlp.must_include = ['bazcal', 'baz', ' bz '];
 
 const bot = new DiscordBot(parser, client)
 

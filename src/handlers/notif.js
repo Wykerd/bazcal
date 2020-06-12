@@ -86,7 +86,7 @@ const handler = async (message, args) => {
             if (reaction.emoji.name === '👍') {
                 // Update Previous
                 for (let order of orders) {
-                    if (!member.orders.includes(order.name)) {
+                    if (!member.orders.includes(order)) {
                         member.orders.push(order)
                     }
                 }
@@ -102,11 +102,14 @@ const handler = async (message, args) => {
         }
     } else {
         for (let order of orders) {
-            if (!member.orders.includes(order.name)) {
+            if (!member.orders.includes(order)) {
                 member.orders.push(order)
             }
         }
         await member.save()
+    }
+    for (let order of orders) {
+        if (item_cache[order].sell < item_cache[order].sell_ema) message.author.send(`You need to sell all your **${item_name(order)}** right now!`);
     }
     message.author.send('Great! I\'ll notify you when you need to sell your investments.')
 }
@@ -167,6 +170,7 @@ function advice_message(sorted_input) {
         final_message += `Minumum Profit: **${formatNumber(sorted_input[item].eprofit)}** _(${sorted_input[item].pprofit}%)_\n\n`
     }
     final_message += '_This data is updated every 30 seconds_\n\n';
+    final_message += 'You have 60 seconds to respond\n\n';
     return final_message += '**React with the numbers of the orders you wish to be notified of when to sell then confirm with :thumbsup:...**';
 }
 
