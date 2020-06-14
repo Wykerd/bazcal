@@ -16,7 +16,7 @@
  */
 import item_cache from '../cache'
 import UserOrder from '../models/userSchema'
-import { item_name, formatNumber } from '../utils'
+import { item_name, formatNumber, advise } from '../utils'
 
 const { NUMBER_EMOJI } = require('../../config.json')
 
@@ -26,16 +26,15 @@ const { NUMBER_EMOJI } = require('../../config.json')
  */
 const handler = async (message, args) => {
     const userID = message.author.id
-    const options = 7
 
-    const sorted_input = advise(args[0], options)
+    const sorted_input = advise(args[0])
 
     if (sorted_input.length === 0) await message.author.send('Looks like the market is in flames...');
 
     const main = await message.author.send(advice_message(sorted_input))
 
     // Setup for the react
-    for (let i = 0; i < options; i++) {
+    for (let i = 0; i < sorted_input.length; i++) {
         await main.react(NUMBER_EMOJI[i])
     }
 
@@ -130,39 +129,6 @@ const handler = async (message, args) => {
     message.author.send('Great! I\'ll notify you when you need to sell your investments.')
 }
 
-function limit(val, min, max) {
-    return val < min ? min : (val > max ? max : val)
-}
-
-function advise(balance, options) {
-    const unsorted = []
-    for (const product_name in item_cache) {
-        const product = item_cache[product_name]
-        const profit = (product.sell * 0.99) - product.buy
-
-        const tvolume = Math.min(product.volume, product.svolume) / 2016
-        const evolume = Math.floor(limit(tvolume, 0, balance / product.buy))
-
-        const eprofit = (evolume * profit)
-
-        unsorted.push({
-            'name': product_name,
-            'evolume': evolume,
-            'invested': (product.buy * evolume).toFixed(2),
-            'pinvested': (((product.buy * evolume) * 100) / balance).toFixed(1),
-            'eprofit': eprofit.toFixed(2),
-            'pprofit': ((profit / product.buy) * 100).toFixed(1)
-        })
-
-    }
-
-    const sorted = unsorted.sort((a, b) => {
-        return b.eprofit - a.eprofit
-    })
-
-    return sorted.filter(item => (item_cache[item.name].buy > item_cache[item.name].buy_ema) && (item_cache[item.name].sell > item_cache[item.name].sell_ema)).slice(0, options)
-}
-
 /**
  * @param {import('discord.js').Message} message 
  */
@@ -171,7 +137,7 @@ export function TradeConverseAdapter (message, entities, nlp_res) {
 
     if (nums.length === 0) throw new Error('I couldn\'t find any balance referenced in your message...');
 
-    if (message.guild) message.channel.send(`<@${message.author.id}> ${nlp_res?.answer || 'Check your DM\'s'}`)
+    if (message.guild) message.channel.send(`<@${message.author.id}> ${nlp_res?.answer || 'Check your DMs'}`)
 
     return handler(message, nums.map(num => num.resolution?.value ?? 0));
 }

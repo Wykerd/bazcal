@@ -1,2 +1,4 @@
 node_models/
 dist/
+
+docker-compose.yml

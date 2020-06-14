@@ -18,19 +18,30 @@ import { Client } from 'discord.js'
 import { CommandParser, DiscordBot } from '@wykerd/discord-framework'
 import SubscribeHandler from './handlers/subscribe'
 import TradeHandler, { TradeConverseAdapter } from './handlers/notif'
+import AdviseHandler from './handlers/advise'
+import LookupHandler from './handlers/lookup'
 import { resolve } from 'path'
 import { convertNumber } from './utils'
+import { HelpHandler, LicenseHandler } from './handlers/info'
 
 export const client = new Client()
 
 const parser = new CommandParser('!bz')
 
-parser.nlp.must_include = ['bazcal', 'baz', ' bz '];
+parser.nlp.must_include = ['bazcal'];
 
 const bot = new DiscordBot(parser, client)
 
 // bot.use('sub', SubscribeHandler, [])
-bot.use('notif', TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : amount ])
+bot.use('notif', TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseInt(amount)])
+
+bot.use(['advise', 'advice'], AdviseHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseInt(amount)])
+
+bot.use(['help', '?'], HelpHandler, [])
+
+bot.use(['license', 'about'], LicenseHandler, [])
+
+bot.use(['lookup', 'search', 'item'], LookupHandler, ['string']);
 
 bot.converse('bazcal.notif', TradeConverseAdapter);
 

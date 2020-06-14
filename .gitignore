@@ -10,3 +10,4 @@ data/
 # Keys and such
 runWithEnv.sh
 keys/
+docker-compose.yml

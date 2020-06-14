@@ -16,6 +16,44 @@
  */
 const items = require('../items.json');
 
+import item_cache from './cache'
+
+function limit(val, min, max) {
+    return val < min ? min : (val > max ? max : val)
+}
+
+export function advise(balance, count = 6, time = 5, include_stablity = true) {
+    const unsorted = []
+    for (const product_name in item_cache) {
+        const product = item_cache[product_name]
+        const profit = (product.sell * 0.99) - product.buy
+
+        const tvolume = (Math.min(product.volume, product.svolume) / 10080) * time
+        const evolume = Math.floor(limit(tvolume, 0, balance / product.buy))
+
+        const eprofit = (evolume * profit)
+
+        unsorted.push({
+            'name': product_name,
+            'evolume': evolume,
+            'invested': (product.buy * evolume).toFixed(2),
+            'pinvested': (((product.buy * evolume) * 100) / balance).toFixed(1),
+            'eprofit': eprofit.toFixed(2),
+            'pprofit': ((profit / product.buy) * 100).toFixed(1),
+            'gradient': product.sell - product.sell_ema
+        })
+
+    }
+
+    const sorted = unsorted.sort((a, b) => {
+        return b.eprofit - a.eprofit
+    })
+
+    if (include_stablity) return sorted.filter(item => (item_cache[item.name].buy > item_cache[item.name].buy_ema) && (item_cache[item.name].sell > item_cache[item.name].sell_ema)).slice(0, count)
+    
+    return sorted.slice(0, count);
+}
+
 export function item_name (item_id) {
     return items[item_id]?.name ?? item_id.replace('_', ' ');
 }
