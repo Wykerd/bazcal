@@ -25,60 +25,61 @@ const { NUMBER_EMOJI } = require('../../config.json')
  * @param {*} args 
  */
 const handler = async (message, args) => {
-    if (!message.guild) message.channel.send('I only work in servers.')
+    function send_advice(channel) {
+        if (!message.guild) message.channel.send('I only work in servers.')
 
-    const userID = message.author.id
+        const userID = message.author.id
+        const sorted_input = advise(args[0])
 
-    const sorted_input = advise(args[0])
+        if (sorted_input.length === 0) await channel.send('Looks like the market is in flames...');
 
-    if (sorted_input.length === 0) await message.author.send('Looks like the market is in flames...');
+        const main = await channel.send(advice_message(sorted_input))
 
-    const main = await message.author.send(advice_message(sorted_input))
-
-    // Setup for the react
-    for (let i = 0; i < sorted_input.length; i++) {
-        await main.react(NUMBER_EMOJI[i])
-    }
-
-    await main.react('👍')
-
-    const filter = (reaction, user) => {
-        return NUMBER_EMOJI.includes(reaction.emoji.name) && user.id === userID
-    }
-
-    // Asks which orders he would like to invest in
-    const reaction_array = []
-
-    /**
-     * @param {import('discord.js').Message} message 
-     */
-    async function awaitReaction(message) {
-        const collected = await message.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
-        const reaction = collected.first()
-
-        if (reaction.emoji.name != '👍') {
-            reaction_array.push(NUMBER_EMOJI.indexOf(reaction.emoji.name))
-            return await awaitReaction(message)
+        // Setup for the react
+        for (let i = 0; i < sorted_input.length; i++) {
+            await main.react(NUMBER_EMOJI[i])
         }
-    }
 
-    try {
-        await awaitReaction(main)   
-    } catch (error) {
-        // ignore error
-        return;
-    }
+        await main.react('👍')
 
-    //Converts reaction to orderIDs
-    const orders = []
+        const filter = (reaction, user) => {
+            return NUMBER_EMOJI.includes(reaction.emoji.name) && user.id === userID
+        }
 
-    for (const i of reaction_array) {
-        orders.push(sorted_input[i].name)
+        // Asks which orders he would like to invest in
+        const reaction_array = []
+
+        /**
+         * @param {import('discord.js').Message} message 
+         */
+        async function awaitReaction(message) {
+            const collected = await message.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
+            const reaction = collected.first()
+
+            if (reaction.emoji.name != '👍') {
+                reaction_array.push(NUMBER_EMOJI.indexOf(reaction.emoji.name))
+                return await awaitReaction(message)
+            }
+        }
+
+        try {
+            await awaitReaction(main)   
+        } catch (error) {
+            // ignore error
+            return;
+        }
+
+        //Converts reaction to orderIDs
+        const orders = []
+
+        for (const i of reaction_array) {
+            orders.push(sorted_input[i].name)
+        }
     }
 
     const member = await UserOrder.findOne({ user_id: message.author.id, server_id: message.guild.id })
 
-    async function make_notif_channel (userID) {
+    async function make_notif_channel () {
         const server = message.guild;
         const name = message.author.username;
 
@@ -96,6 +97,8 @@ const handler = async (message, args) => {
                 },
             ] 
         });
+
+        return channel;
     }
 
     if (!member) {
@@ -103,15 +106,19 @@ const handler = async (message, args) => {
         const n_mem = new UserOrder({
             user_id: message.author.id,
             server_id: message.guild.id,
+            channel_id: message.channel.id,
             last_mesage: new Date(),
-            channel_id
             orders: orders
         })
         await n_mem.save()
-
+        const channel = await make_notif_channel()
+        send_advice(channel)
 
     } else if (member.orders.length > 0) {
-        const new_message = await message.author.send('You already have other investments pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
+        const channel = await message.guild.channels.cache.find(channel => channel.id == member.channel_id)
+        send_advice(channel)
+
+        const new_message = await channel.send('You already have other investments pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
 
         await new_message.react('👍')
         await new_message.react('👎')
@@ -142,6 +149,9 @@ const handler = async (message, args) => {
             return;
         }
     } else {
+        const channel = await message.guild.channels.cache.find(channel => channel.id == member.channel_id)
+        send_advice(channel)
+        
         for (let order of orders) {
             if (!member.orders.includes(order)) {
                 member.orders.push(order)
@@ -150,9 +160,9 @@ const handler = async (message, args) => {
         await member.save()
     }
     for (let order of orders) {
-        if (item_cache[order].sell < item_cache[order].sell_ema) message.author.send(`You need to sell all your **${item_name(order)}** right now!`);
+        if (item_cache[order].sell < item_cache[order].sell_ema) channel.send(`You need to sell all your **${item_name(order)}** right now!`);
     }
-    message.author.send('Great! I\'ll notify you when you need to sell your investments.')
+    channel.send('Great! I\'ll notify you when you need to sell your investments.')
 }
 
 /**
