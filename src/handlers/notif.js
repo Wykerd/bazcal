@@ -25,6 +25,8 @@ const { NUMBER_EMOJI } = require('../../config.json')
  * @param {*} args 
  */
 const handler = async (message, args) => {
+    if (!message.guild) message.channel.send('I only work in servers.')
+
     const userID = message.author.id
 
     const sorted_input = advise(args[0])
@@ -74,16 +76,40 @@ const handler = async (message, args) => {
         orders.push(sorted_input[i].name)
     }
 
-    const member = await UserOrder.findOne({ user_id: message.author.id })
+    const member = await UserOrder.findOne({ user_id: message.author.id, server_id: message.guild.id })
+
+    async function make_notif_channel (userID) {
+        const server = message.guild;
+        const name = message.author.username;
+
+        const channel = await server.channels.create(`bazcal_${name}`, { 
+            type: 'text', 
+            topic: 'This channel will delete after 3 minutes in which you have no orders pending', 
+            permissionOverwrites: [
+                {
+                    id: message.guild.id,
+                    deny: ['VIEW_CHANNEL'],
+                },
+                {
+                    id: message.author.id,
+                    allow: ['VIEW_CHANNEL'],
+                },
+            ] 
+        });
+    }
 
     if (!member) {
         // Create a new order for user
         const n_mem = new UserOrder({
             user_id: message.author.id,
-            subscribed: false,
+            server_id: message.guild.id,
+            last_mesage: new Date(),
+            channel_id
             orders: orders
         })
         await n_mem.save()
+
+
     } else if (member.orders.length > 0) {
         const new_message = await message.author.send('You already have other investments pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
 
