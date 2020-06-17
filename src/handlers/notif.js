@@ -127,8 +127,6 @@ const handler = async (message, args) => {
         member.last_message = new Date();
         await member.save()
     }
-
-    channel.setTopic(`You have ${member.orders.length} items in the notification queue.`);
     
     if (channel) {
         channel.send('Great! I\'ll notify you when you need to sell your investments.')
@@ -143,10 +141,7 @@ const handler = async (message, args) => {
             } 
         }
 
-        if (updated) {
-            channel.setTopic(`You have ${member.orders.length} items in the notification queue.`);
-            await member.save();
-        }
+        if (updated) await member.save();
     }
 }
 
