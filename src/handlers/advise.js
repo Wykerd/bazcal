@@ -16,13 +16,22 @@
  */
 import item_cache from '../cache'
 
-import { item_name, formatNumber, advise } from '../utils'
+import { item_name, formatNumber, advise, get_user_channel, get_member } from '../utils'
 
 /**
  * @param {import('discord.js').Message} message 
  * @param {*} args 
  */
 const handler = async (message, args) => {
+    const member = await get_member(message);
+    const channel = await get_user_channel(message, member);
+
+    member.last_message = new Date();
+    
+    member.channel_id = channel.id;
+
+    await member.save();
+
     const time = parseInt(args[1])
 
     const sorted_input = advise(args[0], 6, Number.isNaN(time) ? 15 : time, args[2]?.toLowerCase() === 'true')
@@ -31,9 +40,9 @@ const handler = async (message, args) => {
 
     response += '\n\n_This data is updated every 30 seconds_';
 
-    message.channel.send(`<@${message.author.id}> Check your DMs`);
+    message.channel.send(`<@${message.author.id}> I've sent you advise in your channel`);
 
-    message.author.send(response);
+    channel.send(`<@${message.author.id}>\n` + response);
 }
 
 export default handler;

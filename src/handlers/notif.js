@@ -15,8 +15,8 @@
  *  along with Bazcal.  If not, see <https://www.gnu.org/licenses/>.
  */
 import item_cache from '../cache'
-import UserOrder from '../models/userSchema'
-import { item_name, formatNumber, advise } from '../utils'
+import UserOrder from '../models/memberSchema'
+import { item_name, formatNumber, advise, get_user_channel, get_member } from '../utils'
 
 const { NUMBER_EMOJI } = require('../../config.json')
 
@@ -25,15 +25,18 @@ const { NUMBER_EMOJI } = require('../../config.json')
  * @param {*} args 
  */
 const handler = async (message, args) => {
-    function send_advice(channel) {
+    const member = await get_member(message);
+
+    const userID = message.author.id
+
+    async function send_advice(channel) {
         if (!message.guild) message.channel.send('I only work in servers.')
 
-        const userID = message.author.id
         const sorted_input = advise(args[0])
 
         if (sorted_input.length === 0) await channel.send('Looks like the market is in flames...');
 
-        const main = await channel.send(advice_message(sorted_input))
+        const main = await channel.send(`<@${member.user_id}>\n` + advice_message(sorted_input))
 
         // Setup for the react
         for (let i = 0; i < sorted_input.length; i++) {
@@ -66,7 +69,7 @@ const handler = async (message, args) => {
             await awaitReaction(main)   
         } catch (error) {
             // ignore error
-            return;
+            return false;
         }
 
         //Converts reaction to orderIDs
@@ -75,48 +78,19 @@ const handler = async (message, args) => {
         for (const i of reaction_array) {
             orders.push(sorted_input[i].name)
         }
+
+        return orders;
     }
 
-    const member = await UserOrder.findOne({ user_id: message.author.id, server_id: message.guild.id })
+    const channel = await get_user_channel(message, member),
+          orders = await send_advice(channel);
 
-    async function make_notif_channel () {
-        const server = message.guild;
-        const name = message.author.username;
+    member.channel_id = channel.id;
 
-        const channel = await server.channels.create(`bazcal_${name}`, { 
-            type: 'text', 
-            topic: 'This channel will delete after 3 minutes in which you have no orders pending', 
-            permissionOverwrites: [
-                {
-                    id: message.guild.id,
-                    deny: ['VIEW_CHANNEL'],
-                },
-                {
-                    id: message.author.id,
-                    allow: ['VIEW_CHANNEL'],
-                },
-            ] 
-        });
-
-        return channel;
-    }
-
-    if (!member) {
-        // Create a new order for user
-        const n_mem = new UserOrder({
-            user_id: message.author.id,
-            server_id: message.guild.id,
-            channel_id: message.channel.id,
-            last_mesage: new Date(),
-            orders: orders
-        })
-        await n_mem.save()
-        const channel = await make_notif_channel()
-        send_advice(channel)
-
-    } else if (member.orders.length > 0) {
-        const channel = await message.guild.channels.cache.find(channel => channel.id == member.channel_id)
-        send_advice(channel)
+    if (!orders || orders?.length === 0) return;
+    
+    if (member?.orders?.length > 0) {
+        member.last_message = new Date();
 
         const new_message = await channel.send('You already have other investments pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
 
@@ -145,24 +119,35 @@ const handler = async (message, args) => {
                 await member.save()
             }
         } catch (error) {
-            // ignore error
+            // ignore error as it is time out
             return;
         }
     } else {
-        const channel = await message.guild.channels.cache.find(channel => channel.id == member.channel_id)
-        send_advice(channel)
-        
-        for (let order of orders) {
-            if (!member.orders.includes(order)) {
-                member.orders.push(order)
-            }
-        }
+        member.orders = orders;
+        member.last_message = new Date();
         await member.save()
     }
-    for (let order of orders) {
-        if (item_cache[order].sell < item_cache[order].sell_ema) channel.send(`You need to sell all your **${item_name(order)}** right now!`);
+
+    channel.setTopic(`You have ${member.orders.length} items in the notification queue.`);
+    
+    if (channel) {
+        channel.send('Great! I\'ll notify you when you need to sell your investments.')
+
+        let updated = false;
+
+        if (orders) for (let order of orders) {
+            if (item_cache[order].sell < item_cache[order].sell_ema) {
+                channel.send(`<@${member.user_id}> You need to sell all your **${item_name(order)}** right now!`);
+                member.orders = member.orders.filter(ord => ord !== order);
+                updated = true;
+            } 
+        }
+
+        if (updated) {
+            channel.setTopic(`You have ${member.orders.length} items in the notification queue.`);
+            await member.save();
+        }
     }
-    channel.send('Great! I\'ll notify you when you need to sell your investments.')
 }
 
 /**

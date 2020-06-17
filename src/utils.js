@@ -18,8 +18,64 @@ const items = require('../items.json');
 
 import item_cache from './cache'
 
+import User from './models/memberSchema'
+
 function limit(val, min, max) {
     return val < min ? min : (val > max ? max : val)
+}
+
+export async function get_member (message) {
+    let member = await User.findOne({ user_id: message.author.id, server_id: message.guild.id })
+
+    const channel = await get_user_channel(message, member);
+
+    if (!member) {
+        member = new User({
+            user_id: message.author.id,
+            server_id: message.guild.id,
+            channel_id: channel.id,
+            last_message: new Date(),
+            orders: []
+        })
+    }
+    
+    return member;
+}
+
+/**
+ * Get the channel of the user
+ * @param {import('discord.js').Message} message 
+ * @param {*} member 
+ */
+export async function get_user_channel (message, member) {
+    if (member?.channel_id) {
+        try {
+            const channel = await message.guild.channels.cache.get(member.channel_id)
+            if (channel) return channel;
+        } catch (error) {
+            member.channel_id = '';
+        }
+    }
+
+    const server = message.guild;
+    const name = message.author.tag.replace(/#/g, '_');
+
+    const channel = await server.channels.create(`bz_${name}`, { 
+        type: 'text', 
+        topic: 'This channel will delete after 3 minutes in which you have no orders pending', 
+        permissionOverwrites: [
+            {
+                id: message.guild.id,
+                deny: ['VIEW_CHANNEL'],
+            },
+            {
+                id: message.author.id,
+                allow: ['VIEW_CHANNEL'],
+            },
+        ] 
+    });
+
+    return channel;
 }
 
 export function advise(balance, count = 6, time = 5, include_stablity = true) {
@@ -42,7 +98,6 @@ export function advise(balance, count = 6, time = 5, include_stablity = true) {
             'pprofit': ((profit / product.buy) * 100).toFixed(1),
             'gradient': product.sell - product.sell_ema
         })
-
     }
 
     const sorted = unsorted.sort((a, b) => {

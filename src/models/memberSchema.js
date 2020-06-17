@@ -38,4 +38,4 @@ const userOrderSchema = new mongoose.Schema({
     }
 })
 
-export default mongoose.model('UserOrders', userOrderSchema)
+export default mongoose.model('Members', userOrderSchema)

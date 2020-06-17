@@ -15,7 +15,7 @@
  *  along with Bazcal.  If not, see <https://www.gnu.org/licenses/>.
  */
 import fetch from 'node-fetch'
-import UserOrder from './models/userSchema'
+import UserOrder from './models/memberSchema'
 import { client } from './client'
 import fs from 'fs'
 import path from 'path'
@@ -88,17 +88,19 @@ export const cache_handler = async () => {
         for (const item_id of sell_point) {
             const members = await UserOrder.find({ orders: item_id });
             for (const member of members) {
-                client.users.cache.get(member.user_id).send(`You need to sell all your **${item_name(item_id)}** right now!`).catch(()=>{});
-                member.orders = member.orders.filter(ord => ord !== item_id);
-                console.log(await member.save());
+                try {
+                    const channel = client.guilds.cache.get(member.server_id)?.channels?.cache?.get(member.channel_id);
+                    channel?.send(`<@${member.user_id}> You need to sell all your **${item_name(item_id)}** right now!`)?.catch(()=>{});
+                    member.orders = member.orders.filter(ord => ord !== item_id);
+                    if (!member.orders.length) channel?.setTopic('No orders in queue. This channel will delete in 3 minutes after the last message has been sent.')
+                    else channel?.setTopic(`You have ${member.orders.length} items in the notification queue.`);
+                    member.last_message = new Date();
+                    console.log(await member.save());   
+                } catch (error) {
+                    member.remove()
+                }
             }
         }
-
-        /*const subscribers = await UserOrder.find({ subscribed: true });
-
-        subscribers.forEach(member => {
-            client.users.cache.get(member.user_id).send(`${buy_point.join(', ')} is currently at a optimal price to buy.`);
-        });*/
 
         await backupCache();
     } catch (error) {
