@@ -19,6 +19,7 @@ const items = require('../items.json');
 import item_cache from './cache'
 
 import User from './models/memberSchema'
+import { client } from './client';
 
 function limit(val, min, max) {
     return val < min ? min : (val > max ? max : val)
@@ -72,6 +73,10 @@ export async function get_user_channel (message, member) {
                 id: message.author.id,
                 allow: ['VIEW_CHANNEL'],
             },
+            {
+                id: client.user.id,
+                allow: ['VIEW_CHANNEL']
+            }
         ] 
     });
 
