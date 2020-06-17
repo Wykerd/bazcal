@@ -31,7 +31,7 @@ parser.nlp.must_include = ['bazcal'];
 
 const bot = new DiscordBot(parser, client)
 
-bot.use('notif', TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseInt(amount)])
+bot.use(['notif', 'notify'], TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseInt(amount)])
 
 bot.use(['advise', 'advice'], AdviseHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseInt(amount)])
 

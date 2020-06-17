@@ -20,7 +20,7 @@
  * @param {*} args 
  */
 export const HelpHandler = (message, args) => {
-    message.channel.send(`<@${message.author.id}> Bazcal - A Discord bot for bazaar trading.\n\nAll commands start with the \`!bz\` prefix.\n\n\`advise\` (aliasses: advice) Simple flipping command, Params: <amount> <timeframe>\n\n\`notif\` Advanced bazaar trading. The bot tell you what to create buy orders for and notifies you when to create the sell orders for maximum profits. Params: <amount>\n\n\`license\` (aliasses: about) Sends more info regarding the bot\n\n\`lookup\` (aliasses: item, search) Returns info regarding a item. Params: <item_name>`);
+    message.channel.send(`<@${message.author.id}> Bazcal - A Discord bot for bazaar trading.\n\nAll commands start with the \`!bz\` prefix.\n\n\`advise\` (aliasses: advice) Simple flipping command, Params: <amount> <timeframe>\n\n\`notif\` (aliasses: notify) Advanced bazaar trading. The bot tell you what to create buy orders for and notifies you when to create the sell orders for maximum profits. Params: <amount>\n\n\`license\` (aliasses: about) Sends more info regarding the bot\n\n\`lookup\` (aliasses: item, search) Returns info regarding a item. Params: <item_name>`);
 }
 
 export const LicenseHandler = (message, args) => {
