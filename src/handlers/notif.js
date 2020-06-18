@@ -89,11 +89,11 @@ const handler = async (message, args) => {
     const channel = await get_user_channel(message, member);
 
     // pre save record to keep track of channel
-    const old_id = member.channel_id;
     member.channel_id = channel.id;
     member.last_message = new Date();
-    
-    if (old_id !== member.channel_id) await member.save();
+
+    // just always save I'm not even gonna check anymore
+    await member.save();
 
     const orders = await send_advice(channel);
 
