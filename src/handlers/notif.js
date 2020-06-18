@@ -91,7 +91,8 @@ const handler = async (message, args) => {
     // pre save record to keep track of channel
     const old_id = member.channel_id;
     member.channel_id = channel.id;
-
+    member.last_message = new Date();
+    
     if (old_id !== member.channel_id) await member.save();
 
     const orders = await send_advice(channel);
@@ -99,8 +100,6 @@ const handler = async (message, args) => {
     if (!orders || orders?.length === 0) return;
     
     if (member?.orders?.length > 0) {
-        member.last_message = new Date();
-
         const new_message = await channel.send('You already have other investments pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
 
         await new_message.react('👍')
@@ -133,7 +132,6 @@ const handler = async (message, args) => {
         }
     } else {
         member.orders = orders;
-        member.last_message = new Date();
         await member.save()
     }
     
