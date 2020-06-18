@@ -29,6 +29,9 @@ const handler = async (message, args) => {
 
     const userID = message.author.id
 
+    /**
+     * @param {import('discord.js').TextChannel} channel 
+     */
     async function send_advice(channel) {
         if (!message.guild) message.channel.send('I only work in servers.')
 
@@ -69,6 +72,7 @@ const handler = async (message, args) => {
             await awaitReaction(main)   
         } catch (error) {
             // ignore error
+            main.delete();
             return false;
         }
 
@@ -82,10 +86,15 @@ const handler = async (message, args) => {
         return orders;
     }
 
-    const channel = await get_user_channel(message, member),
-          orders = await send_advice(channel);
+    const channel = await get_user_channel(message, member);
 
+    // pre save record to keep track of channel
+    const old_id = member.channel_id;
     member.channel_id = channel.id;
+
+    if (old_id !== member.channel_id) await member.save();
+
+    const orders = await send_advice(channel);
 
     if (!orders || orders?.length === 0) return;
     
@@ -165,7 +174,7 @@ function advice_message(sorted_input) {
         final_message += `${parseInt(item) + 1}: **${item_name(sorted_input[item].name)}**\n`
         final_message += `Quantity: **${sorted_input[item].evolume}**\n`
         final_message += `Invested: **${formatNumber(sorted_input[item].invested)}** _(${sorted_input[item].pinvested}%)_\n`
-        final_message += `Minumum Profit: **${formatNumber(sorted_input[item].eprofit)}** _(${sorted_input[item].pprofit}%)_\n\n`
+        final_message += `Minimum Profit: **${formatNumber(sorted_input[item].eprofit)}** _(${sorted_input[item].pprofit}%)_\n\n`
     }
     final_message += '_This data is updated every 30 seconds_\n\n';
     final_message += 'You have 60 seconds to respond\n\n';
