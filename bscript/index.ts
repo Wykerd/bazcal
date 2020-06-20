@@ -122,7 +122,10 @@ export class TokenStream {
         while (!this.input.isEof()) {
             const char = this.input.next();
             if (char === '\\') {
-                str += this.input.next();
+                this.input.next();
+                const next_char = this.input.current();
+                if (next_char === 'n') str += '\n';
+                else str += this.input.next();
             } else if (char === '"') {
                 clean_exit = true;
                 break;
@@ -224,7 +227,7 @@ export const PRECEDENCE : { [key:string]: number } = {
     "*": 20, "/": 20, "%": 20,
 };
 
-export const ASSIGN_OPERATORS = [ '=', '+=', '-=', '^=', '~=', '|=' ];
+export const ASSIGN_OPERATORS = [ '=', /*'+=', '-=', '^=', '~=', '|='*/ ];
 
 export class Parser {
     public readonly stream : TokenStream;

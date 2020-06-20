@@ -97,7 +97,7 @@ export function raw_advise (balance, time = 5, include_stablity = true) {
         unsorted.push({
             'name': product_name,
             'evolume': evolume,
-            'invested': (product.buy * evolume).toFixed(2),
+            'invested': (product.buy * evolume),
             'pinvested': (((product.buy * evolume) * 100) / balance).toFixed(1),
             'eprofit': eprofit,
             'pprofit': ((profit / product.buy) * 100).toFixed(1),

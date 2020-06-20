@@ -261,13 +261,13 @@ const advanced_runner = async (message, ast, args) => {
         return array.map((item, i) => `${i + 1}: **${item_name(item.name)}**\nQuantity: **${item.evolume}**\nInvested: **${formatNumber(item.invested)}** _(${item.pinvested}%)_\nEstimated Profit: **${formatNumber(item.eprofit)}** _(${item.pprofit}%)_\nSell price trend: **${item.gradient < 0 ? 'Product sell value decreasing' : 'Product sell value increasing'}**`).join('\n\n');
     });
     env.def("raw_advise", raw_advise);
+    env.def("item_name", item_name);
     // Object builtins
     env.def("get_property", function (obj, prop) {
         if (prop == 'prototype') throw new Error('Runtime error: Getting prototype property is not allowed!');
         return obj[prop];
     });
     env.def("typeof", obj => typeof obj);
-    env.def("item_name", item_name);
     // Array builtins
     env.def("len", function (obj) {
         return obj.length;
