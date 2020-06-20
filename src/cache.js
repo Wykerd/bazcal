@@ -45,8 +45,8 @@ export const cache_handler = async () => {
         const items = Object.keys(json['products']).map(function (key) {
             return {
                 'name': json['products'][key]['product_id'],
-                'buy': json['products'][key]?.['sell_summary']?.[0]?.['pricePerUnit'] ?? -1,
-                'sell': json['products'][key]?.['buy_summary']?.[0]?.['pricePerUnit'] ?? -1,
+                'buy': json['products'][key]?.['sell_summary']?.[0]?.['pricePerUnit'] + 0.1 ?? -1,
+                'sell': json['products'][key]?.['buy_summary']?.[0]?.['pricePerUnit'] - 0.1 ?? -1,
                 'volume': json['products'][key]?.['quick_status']?.['buyMovingWeek'] ?? -1,
                 'svolume': json['products'][key]?.['quick_status']?.['sellMovingWeek'] ?? -1
             }
