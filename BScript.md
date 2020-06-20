@@ -185,3 +185,16 @@ Returns unsorted and unfiltered array of items.
 
 See advice for properties avaiable on item objects.
 
+## Discord API
+
+`func get_private_channel ()`
+
+Gets the user's private channel and returns it, if it doesn't exist it'll make a new one
+
+`func get_current_channel ()`
+
+Get the channel the message was sent in.
+
+`func send_message (message, channel)`
+
+Send `message` into `channel`
