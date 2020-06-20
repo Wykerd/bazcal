@@ -10,7 +10,9 @@
     "@babel/cli": "^7.10.1",
     "@babel/core": "^7.10.2",
     "@babel/preset-env": "^7.10.2",
-    "@nlpjs/basic": "^4.4.0"
+    "@nlpjs/basic": "^4.4.0",
+    "@types/node": "^14.0.13",
+    "typescript": "^3.9.5"
   },
   "name": "scheduler",
   "version": "1.0.0",
@@ -19,7 +21,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx babel src --out-dir dist",
     "start": "node dist/index",
-    "train": "node nlp/train && mv model.nlp dist/model.nlp"
+    "train": "node nlp/train && mv model.nlp dist/model.nlp",
+    "build:bscript": "npx tsc"
   },
   "private": true
 }

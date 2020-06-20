@@ -19,6 +19,7 @@ import { CommandParser, DiscordBot } from '@wykerd/discord-framework'
 import TradeHandler, { TradeConverseAdapter } from './handlers/notif'
 import AdviseHandler from './handlers/advise'
 import LookupHandler from './handlers/lookup'
+import AdvancedHandler from './handlers/advanced'
 import { resolve } from 'path'
 import { convertNumber } from './utils'
 import { HelpHandler, LicenseHandler } from './handlers/info'
@@ -31,17 +32,19 @@ parser.nlp.must_include = ['bazcal'];
 
 const bot = new DiscordBot(parser, client)
 
-bot.use(['notif', 'notify'], TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseInt(amount)])
+bot.use(['advanced', 'custom'], AdvancedHandler, ['string']);
 
-bot.use(['advise', 'advice'], AdviseHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseInt(amount)])
+// bot.use(['notif', 'notify'], TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)])
 
-bot.use(['help', '?'], HelpHandler, [])
+// bot.use(['advise', 'advice'], AdviseHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)])
 
-bot.use(['license', 'about'], LicenseHandler, [])
+// bot.use(['help', '?'], HelpHandler, [])
 
-bot.use(['lookup', 'search', 'item'], LookupHandler, ['string']);
+// bot.use(['license', 'about'], LicenseHandler, [])
 
-bot.converse('bazcal.notif', TradeConverseAdapter);
+// bot.use(['lookup', 'search', 'item'], LookupHandler, ['string']);
+
+// bot.converse('bazcal.notif', TradeConverseAdapter);
 
 bot.model(resolve(__dirname, './model.nlp'))
 
