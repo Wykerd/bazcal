@@ -18,7 +18,7 @@ Variables can be assigned a value with an `=` operator, other operator support m
 
 ## Expressions
 
-Everything in BScript is expressions.
+Everything in BScript is expressions. Expressions are seperated by semi colons.
 
 ## Sequences
 
@@ -92,6 +92,8 @@ Escape characters available:
 ## Numbers
 
 **Note** The current interpreter doen't suport defining negative numbers so to do this you must use this hack for now `0-2` to get negative number, in this case `-2`
+
+**Note** Order of operations doesn't work currently! Please use brackets to indciate order of operations.
 
 # Builtins
 

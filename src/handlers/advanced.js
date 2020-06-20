@@ -21,6 +21,7 @@ import UserScript from '../models/scriptSchema';
 import { Parser, InputStream, TokenStream, Environment } from "../../lib/index"
 
 import { item_name, formatNumber, advise, get_user_channel, get_member, raw_advise, convertNumber } from '../utils'
+import { AdvancedHelp, AdvancedPublicHelp } from './info';
 
 /**
  * Base handler for advanced messages
@@ -62,6 +63,8 @@ const handler = (message, args) => {
             }
         case 'public':
             return advanced_public_commands(message, args);
+        case 'help':
+            return AdvancedHelp(message);
         default:
             return advanced_run_public(message, command.toLowerCase(), args);
             break;
@@ -84,10 +87,10 @@ const advanced_public_commands = async (message, args) => {
         case 'info':
             {
                 if (args.length < 1) {
-                    message.channel.send(`<@${message.author.id}>\nPublic script repository info:\n\nEstimated script count: **${await UserScript.estimatedDocumentCount()}**`);
+                    await message.channel.send(`<@${message.author.id}>\nPublic script repository info:\n\nEstimated script count: **${await UserScript.estimatedDocumentCount()}**`);
                 } else {
                     const script_doc = await get_script();
-                    message.channel.send(`<@${message.author.id}>\nUser id: **${script_doc.user_id}**\nScript name: **${script_doc.script_name}**\nPublic name: **${script_doc.script_public_name || 'Not available via public name'}**`);
+                    await message.channel.send(`<@${message.author.id}>\nUser id: **${script_doc.user_id}**\nScript name: **${script_doc.script_name}**\nPublic name: **${script_doc.script_public_name || 'Not available via public name'}**`);
                 }
             }
             break;
@@ -102,9 +105,11 @@ const advanced_public_commands = async (message, args) => {
             {
                 if (args.length < 1) throw new Error('Invalid arguments. Expected 3 or more arguments, got ' + (args.length + 1));
                 const script_doc = await get_script();
-                message.channel.send('```' + script_doc.script_raw + '```');
+                await message.channel.send('```' + script_doc.script_raw + '```');
             }
             break;
+        case 'help':
+            return AdvancedPublicHelp(message);
         default:
             throw new Error('Unknown command.');
             break;
@@ -168,7 +173,7 @@ const advanced_parse = (script) => {
 
 const advanced_parse_args = (args) => {
     const args_str = args.join(" ").trim() // recreate the string of the arguments
-    if (args_str.indexOf('```') !== 0) throw new Error('Expected script as first argument!');
+    if (args_str.indexOf('```') !== 0) throw new Error('Expected \`\`\` to introduce script got ' + args_str.substr(0,3) + '!');
     const [ _, script, new_args_str ] = args_str.split('```');
     return [ script.trim(), new_args_str.trim().split(' ') ];
 }
