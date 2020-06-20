@@ -1,14 +1,27 @@
 # Bazcal Bot
 
-A Discord bot for bazaar trading.
+A highly customizable discord bot for Hypixel bazaar trading.
 
-# Backstory
+# Features
 
-This bot is the successor to a bot made initially for fun by [Jakkalsie](https://github.com/Jakkalsie) / Vent#9459.
+## Built-in commands
 
-He got involved in making bots for Nert#2599 aka [NertCoding](https://github.com/NertCoding)'s discord server Skyblock Stock Brokers. At this point Vent got in contact with me to help him out with the bot as he was still relatively new to the javascript ecosystem. 
+- Advise
+    - Simple flipping command
+- Notif
+    - Advanced bazaar trading. The bot tell you what to create buy orders for and notifies you when to create the sell orders for maximum profits. 
+- Lookup
+    - Returns info regarding an item
 
-So came to existance `Bazcal` _improved version_ with a superior algorithm and feature set to the original `Bazcal`
+## Scripting
+
+Bazcal has a custom scripting language I like to call BScript. This allows you to make your own custom commands without coding your own bot from scratch. The language is brand new so the features are still lacking but I'll be adding more features as time goes by.
+
+For more info on how to use BScript read BScript.md
+
+# Roadmap
+
+Bazcal is slowly becoming more than a simple bazaar trading bot and more a general purpose, scriptable bot. In the future we might branch of this bot more into that direction.
 
 # Setup
 
@@ -38,10 +51,6 @@ Lastly build and deploy with docker-compose
 ```
 docker-compose up --build
 ```
-
-# Usage
-
-The main command for the bot is `!bz notif <amount>` but the bot also uses the NLP capablities of [@wykerd/discord-framework](https://github.com/Wykerd/discord-framework) so you can also access it with chat messages along the line of `Bazcal, I have 137k coins, can you advise me on how to invest it?` (it requires the words bazcal, bz or baz to be present in the message to detect it)
 
 # License
 
