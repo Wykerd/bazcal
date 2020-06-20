@@ -20,6 +20,7 @@ import TradeHandler, { TradeConverseAdapter } from './handlers/notif'
 import AdviseHandler from './handlers/advise'
 import LookupHandler from './handlers/lookup'
 import AdvancedHandler from './handlers/advanced'
+import AuctionLookupHandler from './handlers/ahlookup'
 import { resolve } from 'path'
 import { convertNumber } from './utils'
 import { HelpHandler, LicenseHandler } from './handlers/info'
@@ -44,7 +45,9 @@ bot.use(['license', 'about'], LicenseHandler, [])
 
 bot.use(['lookup', 'search', 'item'], LookupHandler, ['string']);
 
-bot.converse('bazcal.notif', TradeConverseAdapter);
+bot.use(['ahlookup', 'ahl'], AuctionLookupHandler, ['string'])
+
+// bot.converse('bazcal.notif', TradeConverseAdapter); // Enable this line to add NLP
 
 bot.model(resolve(__dirname, './model.nlp'))
 
