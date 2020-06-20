@@ -172,7 +172,7 @@ function advice_message(sorted_input) {
         final_message += `${parseInt(item) + 1}: **${item_name(sorted_input[item].name)}**\n`
         final_message += `Quantity: **${sorted_input[item].evolume}**\n`
         final_message += `Invested: **${formatNumber(sorted_input[item].invested)}** _(${sorted_input[item].pinvested}%)_\n`
-        final_message += `Minimum Profit: **${formatNumber(sorted_input[item].eprofit)}** _(${sorted_input[item].pprofit}%)_\n\n`
+        final_message += `Minimum Profit: **${formatNumber(sorted_input[item].eprofit.toFixed(2))}** _(${sorted_input[item].pprofit}%)_\n\n`
     }
     final_message += '_This data is updated every 30 seconds_\n\n';
     final_message += 'You have 60 seconds to respond\n\n';

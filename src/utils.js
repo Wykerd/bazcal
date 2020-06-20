@@ -83,7 +83,7 @@ export async function get_user_channel (message, member) {
     return channel;
 }
 
-export function advise(balance, count = 6, time = 5, include_stablity = true) {
+export function raw_advise (balance, time = 5, include_stablity = true) {
     const unsorted = []
     for (const product_name in item_cache) {
         const product = item_cache[product_name]
@@ -99,11 +99,16 @@ export function advise(balance, count = 6, time = 5, include_stablity = true) {
             'evolume': evolume,
             'invested': (product.buy * evolume).toFixed(2),
             'pinvested': (((product.buy * evolume) * 100) / balance).toFixed(1),
-            'eprofit': eprofit.toFixed(2),
+            'eprofit': eprofit,
             'pprofit': ((profit / product.buy) * 100).toFixed(1),
             'gradient': product.sell - product.sell_ema
         })
     }
+    return unsorted;
+}
+
+export function advise(balance, count = 6, time = 5, include_stablity = true) {
+    const unsorted = raw_advise(balance, time, include_stablity);
 
     const sorted = unsorted.sort((a, b) => {
         return b.eprofit - a.eprofit
@@ -127,6 +132,8 @@ export function convertNumber(input) {
     } else if (exp[0].toUpperCase() == 'K') {
         return num[0] * 1000
     }
+    
+    return false;
 }
 
 const formatter = new Intl.NumberFormat()
