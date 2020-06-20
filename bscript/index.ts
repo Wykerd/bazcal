@@ -122,10 +122,9 @@ export class TokenStream {
         while (!this.input.isEof()) {
             const char = this.input.next();
             if (char === '\\') {
-                this.input.next();
-                const next_char = this.input.current();
+                const next_char = this.input.next();;
                 if (next_char === 'n') str += '\n';
-                else str += this.input.next();
+                else str += next_char;
             } else if (char === '"') {
                 clean_exit = true;
                 break;
