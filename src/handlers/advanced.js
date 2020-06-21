@@ -256,9 +256,10 @@ const advanced_runner = async (message, ast, args) => {
     });
     env.def("send_message", async function (msg, channel) {
         try {
-            if (messages_sent > 5) throw new Error('Maximum send_message call limit of 5 reached');
-            await (await channel).send(msg);
+            if (messages_sent === 5) message.channel.send(`<@${message.author.id}> Maximum send_message call limit reached`);
             messages_sent++;
+            if (messages_sent > 5) return;
+            await (await channel).send(msg);
         } catch (error) {
             message.channel.send(`<@${message.author.id}> Error: Runtime error: send_message threw error: ${error.message}`);
         }
