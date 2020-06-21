@@ -242,6 +242,7 @@ const advanced_runner = async (message, ast, args) => {
     const env = new Environment();
     // define global builtin functions
     // Discord API
+    let messages_sent = 0;
     env.def("get_private_channel", async function (msg) {
         const member = await get_member(message);
         const channel = await get_user_channel(message, member);
@@ -255,7 +256,9 @@ const advanced_runner = async (message, ast, args) => {
     });
     env.def("send_message", async function (msg, channel) {
         try {
-            await (await channel).send(msg);   
+            if (messages_sent > 5) throw new Error('Maximum send_message call limit of 5 reached');
+            await (await channel).send(msg);
+            messages_sent++;
         } catch (error) {
             message.channel.send(`<@${message.author.id}> Error: Runtime error: send_message threw error: ${error.message}`);
         }
