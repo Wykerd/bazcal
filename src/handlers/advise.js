@@ -40,7 +40,7 @@ const handler = async (message, args) => {
 
     response += '\n\n_This data is updated every 30 seconds_';
 
-    message.channel.send(`<@${message.author.id}> I've sent you advise in your channel`);
+    message.channel.send(`<@${message.author.id}> I've sent you advice in your channel`);
 
     channel.send(`<@${message.author.id}>\n` + response);
 }
