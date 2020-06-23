@@ -32,5 +32,5 @@ export const AdvancedHelp = (message) => {
 }
 
 export const AdvancedPublicHelp  = (message) => {
-    return message.channel.send(`<@${message.author.id}> Public Repo Commands Help\n\n\`info\` Get info of script. Params <?script_name>\n\n\`export\` returns the parsed AST output returned by the parser [you're probably never gonna use this]. Params: <script_name>\n\n\`source\` Get the source code for a script. Params: <script_name>\n\nRunning public commands: !bz advanced <public_script_name>`);
+    return message.channel.send(`<@${message.author.id}> Public Repo Commands Help\n\n\`info\` Get info of script. Params <script_name>\n\n\`export\` returns the parsed AST output returned by the parser [you're probably never gonna use this]. Params: <script_name>\n\n\`source\` Get the source code for a script. Params: <script_name>\n\nRunning public commands: !bz advanced <public_script_name>`);
 }
