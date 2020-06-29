@@ -244,16 +244,17 @@ const advanced_runner = async (message, ast, args) => {
     // Discord API
     const bscript_config = message._server_doc.bscript;
     let messages_sent = 0;
-    env.def("get_private_channel", async function (msg) {
-        if (bscript_config.force_channel_messages) return message.channel;
+    async function get_priv_chan_intern () {
         const member = await get_member(message);
         const channel = await get_user_channel(message, member);
         member.last_message = new Date();
         member.channel_id = channel.id;
         await member.save();
         return channel;
-    });
+    }
+    env.def("get_private_channel", get_priv_chan_intern);
     env.def("get_current_channel", async function () {
+        if (bscript_config.force_channel_messages) return await get_priv_chan_intern();
         return message.channel;
     });
     env.def("send_message", async function (msg, channel) {
