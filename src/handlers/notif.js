@@ -38,7 +38,7 @@ const handler = async (message, args) => {
 
         if (sorted_input.length === 0) await channel.send(templates.no_results);
 
-        const main = await channel.send(`<@${member.user_id}>\n` + template.header + advice_message(sorted_input) + '\n\n' + templates.footer)
+        const main = await channel.send(`<@${member.user_id}>\n` + templates.header + advice_message(sorted_input) + '\n\n' + templates.footer)
 
         // Setup for the react
         for (let i = 0; i < sorted_input.length; i++) {
@@ -94,7 +94,7 @@ const handler = async (message, args) => {
     // just always save I'm not even gonna check anymore
     await member.save();
 
-    if (templates.instruction) await message.channel.send(templates.instruction)
+    if (templates.instruction) await message.channel.send(templates.instruction.replace(/{{user}}/gi, `<@${message.author.id}>`))
 
     const orders = await send_advice(channel);
 

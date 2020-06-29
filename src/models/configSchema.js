@@ -101,10 +101,6 @@ const configSchema = new mongoose.Schema({
         force_channel_messages: {
             type: Boolean,
             default: false
-        },
-        send_message_limit: {
-            type: Number,
-            default: 5
         }
     }
 })

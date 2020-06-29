@@ -242,7 +242,7 @@ const advanced_runner = async (message, ast, args) => {
     const env = new Environment();
     // define global builtin functions
     // Discord API
-    const bscript_config = message._server_doc.bscript;
+    const bscript_config = message._server_doc.bscipt; // well this spelling mistake's gonna be here forever
     let messages_sent = 0;
     async function get_priv_chan_intern () {
         const member = await get_member(message);
@@ -251,17 +251,23 @@ const advanced_runner = async (message, ast, args) => {
         member.channel_id = channel.id;
         await member.save();
         return channel;
-    }
+    };
+
     env.def("get_private_channel", get_priv_chan_intern);
-    env.def("get_current_channel", async function () {
-        if (bscript_config.force_channel_messages) return await get_priv_chan_intern();
-        return message.channel;
-    });
+
+    if (!bscript_config.force_channel_messages) {
+        env.def("get_current_channel", async function () {
+            return message.channel;
+        });
+    } else {
+        env.def("get_current_channel", get_priv_chan_intern);
+    }
+
     env.def("send_message", async function (msg, channel) {
         try {
-            if (messages_sent === bscript_config.send_message_limit) message.channel.send(`<@${message.author.id}> Maximum send_message call limit reached`);
+            if (messages_sent === 5) message.channel.send(`<@${message.author.id}> Maximum send_message call limit reached`);
             messages_sent++;
-            if (messages_sent > bscript_config.send_message_limit) return;
+            if (messages_sent > 5) return;
             await (await channel).send(msg);
         } catch (error) {
             message.channel.send(`<@${message.author.id}> Error: Runtime error: send_message threw error: ${error.message}`);
