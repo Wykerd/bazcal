@@ -102,17 +102,9 @@ const configSchema = new mongoose.Schema({
             type: Boolean,
             default: false
         },
-        global_commands: {
-            type: [String],
-            default: [ 'parse', 'export', 'eval', 'delete', 'save', 'run', 'set_name', 'public' ]
-        },
         send_message_limit: {
             type: Number,
             default: 5
-        },
-        global_public_commands: {
-            type: [String],
-            default: [ 'info', 'source', 'export' ]
         }
     }
 })

@@ -34,13 +34,44 @@ const handler = async (message, args) => {
 
     const time = parseInt(args[1])
 
-    const sorted_input = advise(args[0], 6, Number.isNaN(time) ? 15 : time, args[2]?.toLowerCase() === 'true')
+    const defaults = message._server_doc.advice_defaults;
 
-    let response = sorted_input.map((item, i) => `${i + 1}: **${item_name(item.name)}**\nQuantity: **${item.evolume}**\nInvested: **${formatNumber(item.invested.toFixed(2))}** _(${item.pinvested}%)_\nEstimated Profit: **${formatNumber(item.eprofit.toFixed(2))}** _(${item.pprofit}%)_\nSell price trend: **${item.gradient < 0 ? 'Product sell value decreasing' : 'Product sell value increasing'}**`).join('\n\n');
+    const sorted_input = advise(args[0], message._server_doc.results, Number.isNaN(time) ? defaults.timeframe : time, args[2] ? args[2].toLowerCase() === 'true' : defaults.include_stablity);
+
+    /*
+    item_index
+    item_id
+    item_name
+    quantity
+    invested
+    invested_short
+    invest_percentage
+    estimated_profit
+    estimated_profit_short
+    estimated_profit_percentage
+    sell_trend
+    */
+
+    let response = message._server_doc.message_templates.advice.header
+        .replace(/{{balance}}/gi, args[0]);
+
+    response += sorted_input.map((item, i) => message._server_doc.message_templates.advice.format
+        .replace(/{{item_index}}/gi, i + 1)
+        .replace(/{{item_id}}/gi, item.name)
+        .replace(/{{item_name}}/gi, item_name(item.name))
+        .replace(/{{quantity}}/gi, item.evolume)
+        .replace(/{{invested}}/gi, item.invested.toFixed(2))
+        .replace(/{{invested_short}}/gi, formatNumber(item.invested.toFixed(2)))
+        .replace(/{{invest_percentage}}/gi, item.pinvested)
+        .replace(/{{estimated_profit}}/gi, item.eprofit.toFixed(2))
+        .replace(/{{estimated_profit_short}}/gi, formatNumber(item.eprofit.toFixed(2)))
+        .replace(/{{estimated_profit_percentage}}/gi, item.pprofit)
+        .replace(/{{sell_trend}}/gi, item.gradient < 0 ? 'Product sell value decreasing' : 'Product sell value increasing')
+    ).join('\n\n');
 
     response += '\n\n_This data is updated every 30 seconds_';
 
-    message.channel.send(`<@${message.author.id}> I've sent you advice in your channel`);
+    message.channel.send(message._server_doc.message_templates.advice.instruction.replace(/{{user}}/gi, `<@${message.author.id}>`));
 
     channel.send(`<@${message.author.id}>\n` + response);
 }

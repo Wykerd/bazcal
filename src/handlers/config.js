@@ -30,6 +30,7 @@ export const ConfigHandler =  async (message, args) => {
             if (!config) throw Error('\n**Bazcal Server Config Manager**\nNo existing config found.');
             const channel = client.guilds.cache.get(config.server_id)?.channels?.cache?.get(config.category_id);
             await channel?.delete();
+            await config.remove();
             await message.channel.send('Deleted existing config.');
             return;
 

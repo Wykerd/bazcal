@@ -25,6 +25,7 @@ const { NUMBER_EMOJI } = require('../../config.json')
  * @param {*} args 
  */
 const handler = async (message, args) => {
+    const templates = message._server_doc.message_templates.notif;
     const member = await get_member(message);
 
     const userID = message.author.id
@@ -33,11 +34,11 @@ const handler = async (message, args) => {
      * @param {import('discord.js').TextChannel} channel 
      */
     async function send_advice(channel) {
-        const sorted_input = advise(args[0])
+        const sorted_input = advise(args[0], message._server_doc.results);
 
-        if (sorted_input.length === 0) await channel.send('Looks like the market is in flames...');
+        if (sorted_input.length === 0) await channel.send(templates.no_results);
 
-        const main = await channel.send(`<@${member.user_id}>\n` + advice_message(sorted_input))
+        const main = await channel.send(`<@${member.user_id}>\n` + template.header + advice_message(sorted_input) + '\n\n' + templates.footer)
 
         // Setup for the react
         for (let i = 0; i < sorted_input.length; i++) {
@@ -93,12 +94,14 @@ const handler = async (message, args) => {
     // just always save I'm not even gonna check anymore
     await member.save();
 
+    if (templates.instruction) await message.channel.send(templates.instruction)
+
     const orders = await send_advice(channel);
 
     if (!orders || orders?.length === 0) return;
     
     if (member?.orders?.length > 0) {
-        const new_message = await channel.send('You already have other investments pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?')
+        const new_message = await channel.send(templates.pending)
 
         await new_message.react('👍')
         await new_message.react('👎')
@@ -134,7 +137,7 @@ const handler = async (message, args) => {
     }
     
     if (channel) {
-        channel.send('Great! I\'ll notify you when you need to sell your investments.')
+        channel.send(templates.confirmed)
 
         let updated = false;
 
@@ -164,17 +167,14 @@ export function TradeConverseAdapter (message, entities, nlp_res) {
 }
 
 function advice_message(sorted_input) {
-    const order_range = 7
-    let final_message = '**Instructions: Pick items from the list and place buy orders for them with the listed quantities, then hold on to these items until the bot notifies you of the optimal time to sell them**\n\n'
+    let final_message = ''
     for (const item in sorted_input) {
         final_message += `${parseInt(item) + 1}: **${item_name(sorted_input[item].name)}**\n`
         final_message += `Quantity: **${sorted_input[item].evolume}**\n`
         final_message += `Invested: **${formatNumber(sorted_input[item].invested)}** _(${sorted_input[item].pinvested}%)_\n`
         final_message += `Minimum Profit: **${formatNumber(sorted_input[item].eprofit.toFixed(2))}** _(${sorted_input[item].pprofit}%)_\n\n`
     }
-    final_message += '_This data is updated every 30 seconds_\n\n';
-    final_message += 'You have 60 seconds to respond\n\n';
-    return final_message += '**React with the numbers of the orders you wish to be notified of when to sell then confirm with :thumbsup:...**';
+    return final_message;
 }
 
 export default handler
