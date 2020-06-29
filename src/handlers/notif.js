@@ -33,8 +33,6 @@ const handler = async (message, args) => {
      * @param {import('discord.js').TextChannel} channel 
      */
     async function send_advice(channel) {
-        if (!message.guild) message.channel.send('I only work in servers.')
-
         const sorted_input = advise(args[0])
 
         if (sorted_input.length === 0) await channel.send('Looks like the market is in flames...');

@@ -77,7 +77,8 @@ export async function get_user_channel (message, member) {
                 id: client.user.id,
                 allow: ['VIEW_CHANNEL']
             }
-        ] 
+        ],
+        parent: message._server_doc.category_id
     });
 
     return channel;

@@ -24,6 +24,7 @@ import AuctionLookupHandler from './handlers/ahlookup'
 import { resolve } from 'path'
 import { convertNumber } from './utils'
 import { HelpHandler, LicenseHandler } from './handlers/info'
+import { ConfigHandler, ConfigLoader, ConfigGenerator } from './handlers/config'
 
 export const client = new Client()
 
@@ -32,6 +33,8 @@ const parser = new CommandParser('!bz')
 parser.nlp.must_include = ['bazcal'];
 
 const bot = new DiscordBot(parser, client)
+
+bot.use(['advanced', 'custom', 'notif', 'notify', 'advise', 'advice', 'config', 'configure', 'conf'], ConfigLoader, []);
 
 bot.use(['advanced', 'custom'], AdvancedHandler, ['string']);
 
@@ -45,11 +48,17 @@ bot.use(['license', 'about'], LicenseHandler, [])
 
 bot.use(['lookup', 'search', 'item'], LookupHandler, ['string']);
 
-bot.use(['ahlookup', 'ahl'], AuctionLookupHandler, ['string'])
+bot.use(['ahlookup', 'ahl'], AuctionLookupHandler, ['string']);
 
-// bot.converse('bazcal.notif', TradeConverseAdapter); // Enable this line to add NLP
+bot.use(['config', 'configure', 'conf'], ConfigHandler,['string']);
 
-bot.model(resolve(__dirname, './model.nlp'))
+bot.use(['init', 'setup'], ConfigGenerator, []);
+
+// Uncomment the lines below to add NLP
+
+// bot.converse('bazcal.notif', TradeConverseAdapter); 
+
+// bot.model(resolve(__dirname, './model.nlp'))
 
 client.login(process.env.DISCORD_KEY)
 
