@@ -52,6 +52,25 @@ Lastly build and deploy with docker-compose
 docker-compose up --build
 ```
 
+## Server Config
+
+Run `!bz init` to generate a default config for your server. 
+
+### Config options
+
+- `advice_defaults`
+    - `timeframe` - the default timeframe in minutes (default: 15)
+    - `include_stablity` - if true only includes flips with increasing sell prices (default: false)
+- `message_templates`
+    - I'm not gonna document this yet I'm lazy
+- `bscipt`
+    - `force_channel_messages` - forces messages to be sent in the private channel instead of current channel when using `get_current_channel` (default: false)
+    - `send_message_limit` - sets the maximum of times `send_message` may be called. (default: 5)
+
+### Changing config options
+
+No simple interface implimented yet! Help would be appreciated or I'll will work on it on a later date.
+
 # License
 
 Copyright Daniel Wykerd, Dirk Beukes 2020
