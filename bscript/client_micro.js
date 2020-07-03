@@ -32,36 +32,38 @@ const { Client } = require('discord.js');
 
 const client = new Client();
 
-client.on('message', function (message) {
-    if (message.content.startsWith(window.config.COMMAND_NAME)) {
-        const _0 = {...globals};
-        _0.arguments = message.content.substr(window.config.COMMAND_NAME.length).split(' ');
-        if (_0.arguments[0] === '') _0.arguments.shift();
-        _0.get_private_channel = function() {
-            console.log('No default implimentation for private channels');
-            return message.channel;
-        };
-        
-        _0.get_current_channel = function(){
-            return message.channel;
-        };
-        
-        _0.messages_sent = 0;
-        _0.send_message = function (msg, channel) {
-            try {
-                if (_0.messages_sent === 5) message.channel.send('<@'+message.author.id+' Maximum send_message call limit reached');
-                _0.messages_sent++;
-                if (_0.messages_sent > 5) return false;
-                channel.send(msg);
-                return false;
-            } catch (error) {
-                message.channel.send('<@'+message.author.id+'Error: Runtime error: send_message threw error: '+error.message);
-                return false;
-            }
-        };
-
-        window.compiled_code(_0, message);
-    }
-});
-
-client.login(window.config.DISCORD_KEY);
+window.start_client = function () {
+    client.on('message', function (message) {
+        if (message.content.startsWith(window.config.COMMAND_NAME)) {
+            const _0 = {...globals};
+            _0.arguments = message.content.substr(window.config.COMMAND_NAME.length).split(' ');
+            if (_0.arguments[0] === '') _0.arguments.shift();
+            _0.get_private_channel = function() {
+                console.warn('No js implimentation for private channels');
+                return message.channel;
+            };
+            
+            _0.get_current_channel = function(){
+                return message.channel;
+            };
+            
+            _0.messages_sent = 0;
+            _0.send_message = function (msg, channel) {
+                try {
+                    if (_0.messages_sent === 5) message.channel.send('<@'+message.author.id+' Maximum send_message call limit reached');
+                    _0.messages_sent++;
+                    if (_0.messages_sent > 5) return false;
+                    channel.send(msg);
+                    return false;
+                } catch (error) {
+                    message.channel.send('<@'+message.author.id+'Error: Runtime error: send_message threw error: '+error.message);
+                    return false;
+                }
+            };
+    
+            window.compiled_code(_0, message);
+        }
+    });
+    
+    client.login(window.config.DISCORD_KEY);
+}

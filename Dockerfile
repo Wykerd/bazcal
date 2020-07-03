@@ -13,5 +13,6 @@ COPY yarn.lock .
 COPY *.json ./
 COPY --from=compiler /usr/src/scheduler/dist/ dist
 COPY --from=compiler /usr/src/scheduler/lib/ lib
+COPY --from=compiler /usr/src/scheduler/static/ static
 RUN yarn install --production
 CMD ["yarn", "start"]

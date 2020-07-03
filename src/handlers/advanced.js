@@ -125,6 +125,7 @@ const advanced_run_public = async (message, name, args) => {
 const advanced_get_public_script = name => UserScript.findOne({ script_public_name: name });
 
 const advanced_set_global_name = async (message, name, globName) => {
+    if (name.length < 3) throw new Error('Script name too short');
     if (await advanced_get_public_script(globName)) throw new Error('There is already a public script with the name: ' + globName);
     const split_name = name.split('/');
     let script_doc;
@@ -192,6 +193,7 @@ const advanced_export = (message, args) => {
  * @param {*} args 
  */
 const advanced_save = async (message, name, args) => {
+    if (name.length < 3) throw new Error('Script name too short');
     const [ script, new_args ] = advanced_parse_args(args);
     const ast = advanced_parse(script);
     let script_doc = await UserScript.findOne({ user_id: message.author.id, script_name: name });
