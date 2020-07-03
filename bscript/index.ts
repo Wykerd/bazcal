@@ -15,12 +15,6 @@
  *  along with Bazcal.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Heyo, Wykerd here, this was a very cool learning experience for me to make this interpreter!
- * I used this tutorial as reference while making it:
- * http://lisperator.net/pltut/
- */
-
 export class InputStream {
     private pos : number = 0;
     private line : number = 1;
@@ -568,5 +562,99 @@ export class Environment {
             default:
                 throw new Error('Runtime error: Cannot handle expression of type ' + exp.type)
         }
+    }
+}
+
+export class Transpiler {
+    private variables : [string, number][] = [];
+    private scope_count = 1;
+
+    private gen_func (exp : ASTNode, scopes: number[]) : string {
+        const scope_id = this.scope_count++;
+        const params = exp.params;
+        params.forEach((param : string) => {
+            this.variables.push([param, scope_id]);
+        });
+        return `(function(${params.join(',')}){var _${scope_id}={${params.join(',')}};return ${this.transpile(exp.body, [...scopes, scope_id])}})`
+    }
+
+    private gen_seq (exp : ASTNode, scopes: number[]) : string {
+        const scope_id = this.scope_count++;
+        const expressions = exp.seq.map((node: ASTNode) => this.transpile(node, [...scopes, scope_id]));
+        const ret = expressions.pop() ?? false;
+        return `(function(){var _${scope_id}={};${expressions.join(';')};return ${ret}})()`
+    }
+
+    private gen_get (name : string, scopes: number[]) : string {
+        const _var = this.variables.filter(f => (f[0] === name) && scopes.includes(f[1])).sort((a, b) => a[1] - b[1]).pop();
+        if (!_var) throw new Error(`Transpile error: Undefined variable ${name}`);
+        return `_${_var[1]}['${_var[0]}']`;
+    }
+
+    private gen_set (var_name: string, expr: string, scope: number) : string {
+        this.variables.push([var_name, scope]);
+        return `(_${scope}['${var_name}']=${expr})`
+    }
+
+    private gen_op (op: string, a: string, b: string) : string {
+        
+        switch (op) {
+            case "+"  : return `(${a}+${b})`;
+            case "-"  : return `(${a}-${b})`;
+            case "*"  : return `(${a}*${b})`;
+            case "/"  : return `(${a}/${b})`;
+            case "%"  : return `(${a}%${b})`;
+            case "&&" : return `(${a}!==false&&${b})`;
+            case "||" : return `(${a}!==false?${a}:${b})`;
+            case "<"  : return `(${a}<${b})`;
+            case ">"  : return `(${a}>${b})`;
+            case "<=" : return `(${a}<=${b})`;
+            case ">=" : return `(${a}>=${b})`;
+            case "==" : return `(${a}===${b})`;
+            case "!=" : return `(${a}!==${b})`;
+        }
+
+        throw new Error("Transpile error: Can't apply operator " + op);
+    }
+
+    public transpile(exp: ASTNode, scopes: number[]) : string {
+        switch (exp.type) {
+            case "int":
+            case "float":
+            case "str":
+            case "bool":
+                return JSON.stringify(exp.value);
+            case "var":
+                return this.gen_get(exp.value, scopes);
+            case "assign":
+                if (exp.left.type !== 'var') throw new Error(`Transpile error: Cannot assign value to ${JSON.stringify(exp.left)}`);
+                return this.gen_set(exp.left.value, this.transpile(exp.right, scopes), scopes[scopes.length - 1])
+            case "binary":
+                return this.gen_op(
+                    exp.operator,
+                    this.transpile(exp.left, scopes),
+                    this.transpile(exp.right, scopes)
+                );
+            case "func":
+                return this.gen_func(exp, scopes);
+            case "if":
+                const cond = this.transpile(exp.cond, scopes);
+                const then = this.transpile(exp.then, scopes);
+                const _else = exp.else ? this.transpile(exp.else, scopes) : false;
+                return `((${cond})?${then}:${_else})`;
+            case "call":
+                const func = this.transpile(exp.func, scopes);
+                return `${func}(${exp.args.map((arg : any) => this.transpile(arg, scopes)).join(',')})`
+            case "sequence":
+                return this.gen_seq(exp, scopes);
+            default:
+                throw new Error('Transpile error: Cannot handle expression of type ' + exp.type)
+        }
+    }
+
+    public extern (names: string[]) {
+        names.forEach(name => {
+            this.variables.push([name, 0]);
+        })
     }
 }

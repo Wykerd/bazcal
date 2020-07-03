@@ -4,6 +4,7 @@ node_modules/
 # Build outputs
 dist/
 lib/
+static/
 
 # Generated data directories
 data/

@@ -4,7 +4,8 @@ COPY . .
 RUN yarn
 RUN yarn build
 RUN yarn build:bscript
-RUN yarn train
+# RUN yarn train
+RUN yarn build:bscript:web_runtime
 
 FROM node:lts-alpine
 WORKDIR /usr/bin/api
