@@ -2,11 +2,14 @@ import express from 'express';
 
 import fs from 'fs';
 import path from 'path';
+import cors from 'cors';
 
 import UserScript from '../models/scriptSchema';
-import { Transpiler } from "../../lib/index"
+import { Transpiler } from "../../lib/index";
 
 const app = express();
+
+app.use(cors());
 
 app.route('/custom/repo')
     .get(async (_, res) => res.status(200)
@@ -47,25 +50,34 @@ app.route('/custom/repo/:user_id/:script_name')
     })
 
 app.route('/custom/js/:id')
-    .get(async (req, res) => {
-        const { id } = req.params;
+    .get(async (req, res, next) => {
+        try {
+            const { id } = req.params;
 
-        const script = await UserScript.findById(id);
+            const script = await UserScript.findById(id);
 
-        if (!script) return res.status(404).contentType('application/javacript').send('window.compiled_code=function(){console.warn(\'No script with ID ' + id + ' found\', arguments)}');
+            if (!script) return res.status(404).contentType('application/javacript').send('window.compiled_code=function(){console.error(\'No script with ID ' + id + ' found\', arguments)}');
 
-        const transpiler = new Transpiler();
+            const transpiler = new Transpiler();
 
-        transpiler.extern(["get_property", "typeof", "len", "map", "join", "sort", "filter", "slice", "parse_num", "kill_scheduler", "advise", "raw_advise", "format_number", "round", "default_advise_formatter", "item_name", "cache_hook", "item_cache", "arguments", "get_current_channel", "get_private_channel", "messages_sent", "send_message"]);
+            transpiler.extern(["get_property", "typeof", "len", "map", "join", "sort", "filter", "slice", "parse_num", "kill_scheduler", "advise", "raw_advise", "format_number", "round", "default_advise_formatter", "item_name", "cache_hook", "item_cache", "arguments", "get_current_channel", "get_private_channel", "messages_sent", "send_message"]);
 
-        const handler = transpiler.transpile({
-            type: "sequence",
-            seq: script.ast
-        }, [0, 1]);
+            const handler = transpiler.transpile({
+                type: "sequence",
+                seq: script.ast
+            }, [0, 1]);
 
-        return res.status(200).contentType('application/javacript').send('window.compiled_code=function(_0, message){' + handler + '}');
+            return res.status(200).contentType('application/javacript').send('window.compiled_code=function(_0, message){' + handler + '}');   
+        } catch (error) {
+            next(error);
+        }
     });
 
-app.use('/', express.static(path.resolve(__dirname, '../../static')));
+app.use('/bot', express.static(path.resolve(__dirname, '../../static/bot')));
+
+app.route('/bot/:id')
+    .get(async (_, res) => res.status(200).sendFile(path.resolve(__dirname, '../../static/bot/index.html')));
+
+app.use('/runtime', express.static(path.resolve(__dirname, '../../static/runtime')));
 
 export default app;

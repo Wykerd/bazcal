@@ -33,6 +33,10 @@ const { Client } = require('discord.js');
 const client = new Client();
 
 window.start_client = function () {
+    client.on('ready', function () {
+        console.log('Bot started');
+    });
+
     client.on('message', function (message) {
         if (message.content.startsWith(window.config.COMMAND_NAME)) {
             const _0 = {...globals};
@@ -50,20 +54,25 @@ window.start_client = function () {
             _0.messages_sent = 0;
             _0.send_message = function (msg, channel) {
                 try {
-                    if (_0.messages_sent === 5) message.channel.send('<@'+message.author.id+' Maximum send_message call limit reached');
+                    if (_0.messages_sent === 5) message.channel.send('<@'+message.author.id+'> Maximum send_message call limit reached');
                     _0.messages_sent++;
                     if (_0.messages_sent > 5) return false;
                     channel.send(msg);
                     return false;
                 } catch (error) {
-                    message.channel.send('<@'+message.author.id+'Error: Runtime error: send_message threw error: '+error.message);
+                    message.channel.send('<@'+message.author.id+'> Error: Runtime error: send_message threw error: '+error.message);
                     return false;
                 }
             };
-    
-            window.compiled_code(_0, message);
+            try {
+                window.compiled_code(_0, message);   
+            } catch (error) {
+                message.channel.send('<@'+message.author.id+'> Error: '+error.message);
+            }
         }
     });
     
     client.login(window.config.DISCORD_KEY);
 }
+
+export default client;

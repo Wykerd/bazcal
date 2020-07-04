@@ -55,8 +55,8 @@ _0.slice = function (arr, start, end) {
 
 _0.parse_num = function (str) {
     return /\d[A-z]/.test(str) ? (function () {
-        var exp = /[A-z]+/.exec(input)
-        var num = /[+-]?([0-9]*[.])?[0-9]+/.exec(input)
+        var exp = /[A-z]+/.exec(str)
+        var num = /[+-]?([0-9]*[.])?[0-9]+/.exec(str)
     
         if (exp[0].toUpperCase() == 'M' || exp[0].toUpperCase() == 'MIL') {
             return num[0] * 1000000

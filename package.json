@@ -1,26 +1,32 @@
 {
   "dependencies": {
     "@wykerd/discord-framework": "^1.1.6",
+    "cors": "^2.8.5",
     "discord.js": "^12.2.0",
     "express": "^4.17.1",
     "mongoose": "^5.9.18",
     "node-fetch": "^2.6.0",
     "node-schedule": "^1.3.2",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "yaml": "^1.10.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.1",
     "@babel/core": "^7.10.2",
+    "@babel/plugin-transform-react-jsx": "^7.10.4",
     "@babel/preset-env": "^7.10.2",
     "@nlpjs/basic": "^4.4.0",
     "@types/node": "^14.0.13",
     "babel-loader": "^8.1.0",
     "core-js": "3",
+    "html-webpack-plugin": "^4.3.0",
     "regenerator-runtime": "^0.13.5",
     "terser-webpack-plugin": "^3.0.6",
     "typescript": "^3.9.5",
     "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   },
   "name": "scheduler",
   "version": "1.0.0",
@@ -31,7 +37,10 @@
     "start": "node dist/index",
     "train": "node nlp/train && mv model.nlp dist/model.nlp",
     "build:bscript": "npx tsc",
-    "build:bscript:web_runtime": "npx webpack -p --config ./bscript/webpack.config.js"
+    "build:bscript:web": "npx webpack -p --config ./bscript/webpack.config.js --config-name ui",
+    "build:bscript:runtime": "npx webpack -p --config ./bscript/webpack.config.js --config-name runtime",
+    "build:bscript:all": "npx webpack -p --config ./bscript/webpack.config.js",
+    "devserver:ui": "npx webpack-dev-server --config ./bscript/webpack.config.js --config-name ui"
   },
   "private": true,
   "browserslist": "> 0.25%, not dead"

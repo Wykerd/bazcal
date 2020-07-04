@@ -20,11 +20,12 @@
 import _0 from './builtins';
 import save_cache from './bz_cache_web';
 
-const k = 2 / (window.config.RANGE + 1);
+const k = 2 / (12 + 1);
 
 const timer = setInterval(async function () {
+    if (!window.config) return console.log('Waiting for config to be set...');
     try {
-        console.log('Caching response');
+        console.log('Bazcal micro: Caching response');
 
         const api_res = await fetch(`${window.config.API_ENDPOINT}?key=${window.config.API_KEY}`);
         
@@ -149,5 +150,5 @@ _0.default_advise_formatter = function (array) {
 }
 
 _0.item_name = function (item_id) {
-    return _0.items[item_id] ?? item_id.replace('_', ' ');
+    return _0.items?.[item_id] ?? item_id.replace('_', ' ');
 }
