@@ -6,8 +6,8 @@ services:
         build: .
         restart: unless-stopped
         environment:
-            API_KEY: 32f3abee-4229-47f8-a72c-64c17e52d14c
-            DISCORD_KEY: NTE4NDcyMjM2NjQyOTkyMTI4.XuYecw.k7a38pMvHrLMsAjrPt_hc-6G16s
+            API_KEY: YOUR HYPIXEL API KEY
+            DISCORD_KEY: YOUR DISCORD BOT TOKEN
             API_ENDPOINT: https://api.hypixel.net/skyblock/bazaar
             DATA_DIR: /data
         volumes: 
@@ -15,6 +15,8 @@ services:
         networks: 
             - outside
             - backend
+        ports:
+            - 80:80
 
     mongo:
         image: mongo
