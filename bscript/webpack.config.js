@@ -108,7 +108,7 @@ module.exports = (env, argv) => {
                 title: 'BScript Web Runtime',
             }),
             new webpack.DefinePlugin({
-                BAZCAL_API_URL: JSON.stringify('http://localhost:9696')
+                BAZCAL_API_URL: JSON.stringify(process.env.BAZCAL_API_URL || 'http://bazcal.wykerd.io')
             })
         ],
     }

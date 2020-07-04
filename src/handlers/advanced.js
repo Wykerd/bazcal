@@ -101,6 +101,14 @@ const advanced_public_commands = async (message, args) => {
                 await message.channel.send(JSON.stringify(script_doc.ast));
             }
             break;
+        // process.env.BAZCAL_API_URL || 'http://bazcal.wykerd.io'
+        case 'web':
+            {
+                if (args.length < 1) throw new Error('Invalid arguments. Expected 3 or more arguments, got ' + (args.length + 1));
+                const script_doc = await get_script();
+                await message.channel.send('Run your custom bot locally in the browser!\n\n' + (process.env.BAZCAL_API_URL || 'http://bazcal.wykerd.io') + '/bot/' + script_doc._id);
+            }
+            break;
         case 'source':
             {
                 if (args.length < 1) throw new Error('Invalid arguments. Expected 3 or more arguments, got ' + (args.length + 1));
