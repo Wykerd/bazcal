@@ -85,7 +85,7 @@ const configSchema = new mongoose.Schema({
             },
             instruction: {
                 type: String,
-                default: '{{user}} Check your DMs'
+                default: '{{user}} Check your channel'
             },
             pending: {
                 type: String,

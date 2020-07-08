@@ -161,7 +161,7 @@ export function TradeConverseAdapter (message, entities, nlp_res) {
 
     if (nums.length === 0) throw new Error('I couldn\'t find any balance referenced in your message...');
 
-    if (message.guild) message.channel.send(`<@${message.author.id}> ${nlp_res?.answer || 'Check your DMs'}`)
+    if (message.guild) message.channel.send(`<@${message.author.id}> ${nlp_res?.answer || 'Check your channel'}`)
 
     return handler(message, nums.map(num => num.resolution?.value ?? 0));
 }
@@ -174,7 +174,7 @@ function advice_message(sorted_input) {
         final_message += `Invested: **${formatNumber(sorted_input[item].invested)}** _(${sorted_input[item].pinvested}%)_\n`
         final_message += `Minimum Profit: **${formatNumber(sorted_input[item].eprofit.toFixed(2))}** _(${sorted_input[item].pprofit}%)_\n\n`
     }
-    return final_message;
+    return final_message.trim();
 }
 
 export default handler
