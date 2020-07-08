@@ -54,12 +54,6 @@ bot.use(['config', 'configure', 'conf'], ConfigHandler,['string']);
 
 bot.use(['init', 'setup'], ConfigGenerator, []);
 
-// Uncomment the lines below to add NLP
-
-// bot.converse('bazcal.notif', TradeConverseAdapter); 
-
-// bot.model(resolve(__dirname, './model.nlp'))
-
 client.login(process.env.DISCORD_KEY)
 
 export default bot

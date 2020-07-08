@@ -4,7 +4,6 @@ COPY . .
 RUN yarn
 RUN yarn build
 RUN yarn build:bscript
-# RUN yarn train
 RUN yarn build:bscript:all
 
 FROM node:lts-alpine
