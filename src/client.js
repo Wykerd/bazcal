@@ -35,9 +35,9 @@ const bot = new DiscordBot(parser, client)
 
 bot.use(['advanced', 'custom'], AdvancedHandler, ['string']);
 
-bot.use(['notif', 'notify'], TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)])
+bot.use(['notif', 'notify', 'n'], TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)])
 
-bot.use(['advise', 'advice'], AdviseHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)])
+bot.use(['advise', 'advice', 'a'], AdviseHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)])
 
 bot.use(['help', '?'], HelpHandler, [])
 
