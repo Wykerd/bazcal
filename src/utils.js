@@ -108,14 +108,14 @@ export function raw_advise (balance, time = 5, include_stablity = true) {
     return unsorted;
 }
 
-export function advise(balance, count = 6, time = 5, include_stablity = true) {
+export function advise(balance, count = 6, time = 5, include_stablity = true, volume_cap = 50000) {
     const unsorted = raw_advise(balance, time, include_stablity);
 
     const sorted = unsorted.sort((a, b) => {
         return b.eprofit - a.eprofit
     })
 
-    if (include_stablity) return sorted.filter(item => (item_cache[item.name].buy > item_cache[item.name].buy_ema) && (item_cache[item.name].sell > item_cache[item.name].sell_ema)).slice(0, count)
+    if (include_stablity) return sorted.filter(item => (item_cache[item.name].buy > item_cache[item.name].buy_ema) && (item_cache[item.name].sell > item_cache[item.name].sell_ema) && (item.evolume > (volume_cap * 10080 / time))).slice(0, count)
     
     return sorted.slice(0, count);
 }
