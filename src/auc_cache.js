@@ -23,7 +23,7 @@ const sorted_flips = [];
 
 async function populate (page) {
     console.log(page);
-    const api_res = await fetch(`https://api.hypixel.net/skyblock/auctions?key=4e21de16-628e-4965-990e-e979b56beda1&page=${page}`);
+    const api_res = await fetch(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`);
     const json = await api_res.json();
 
     auction_cache = [...auction_cache, ...json.auctions];
