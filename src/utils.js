@@ -16,10 +16,15 @@
  */
 const items = require('../items.json');
 
+import { getGlyph, getItems } from 'sb-glyph';
+
+import { loadImage, createCanvas } from 'canvas';
+
 import item_cache from './cache'
 
 import User from './models/memberSchema'
 import { client } from './client';
+import sorted_flips from './auc_cache';
 
 function limit(val, min, max) {
     return val < min ? min : (val > max ? max : val)
@@ -151,4 +156,186 @@ export function formatNumber(number) {
 
 export function round(value, decimals) {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals)
+}
+
+export function ah_suggest (balance, time, count = 6, top = 0.25) {
+    const affordable = sorted_flips.filter(item => (item[2] <= balance));
+
+    for (const item of affordable) {
+        item[0] = item[0].filter(it => ((it.end - Date.now()) <= time) && ((it.end - Date.now()) > 120000));
+    }
+
+    const possible = affordable.filter(item => (item[0].length > 0) && (item[1] > 0));
+
+    const Q1 = possible.length * top;
+    const profitable = possible.slice(0, Q1 >= count ? Q1 : count);
+
+    const picks = [];
+
+    for (let i = 0; i < count; i++) {
+        const index = Math.floor(Math.random() * profitable.length);
+        const rem = profitable.splice(index, 1);
+        const item = rem[0];
+        const auction = item[0][Math.floor(Math.random() * item[0].length)]
+        auction._profit = item[1];
+        auction._bid_price = item[2];
+        picks.push(auction);
+    }
+
+    return picks;
+}
+
+export function msToTime(ms) {
+    const secs = parseInt((ms/1000)%60)
+    , mins = parseInt((ms/(1000*60))%60)
+    , hrs = parseInt((ms/(1000*60*60))%24);
+
+  
+    if (hrs === 0) {
+        if (mins === 0) return secs + 's';
+        return mins + 'm ' + secs + 's';
+    }
+    return hrs + 'h ' + mins + 'm ' + secs + 's';
+}
+
+/**
+ * @param {import('canvas').CanvasRenderingContext2D} ctx 
+ * @param {*} item 
+ * @param {*} x 
+ * @param {*} y 
+ */
+async function drawCard (ctx, item, x, y) {
+    const items = await getItems(item.item_bytes, true);
+
+    const name = items[0].display_name.split('§');
+
+    ctx.fillStyle = '#23272A';
+
+    ctx.fillRect(10 + (x * 600), 150 + (y * 168), 590, 158);
+    
+    const buf = await getGlyph(items[0], 'cache');
+
+    if (buf) {
+        const glyph = await loadImage(buf);
+        ctx.drawImage(glyph, 20 + (x * 600), ((158 / 2) - (glyph.height / 2)) + 150 + (y * 168));
+    }
+
+    let offset = 0;
+    ctx.font = 'bold 28px sans-serif';
+    for (const section of name) {
+
+        const color_code = section.charAt(0);
+        const str = section.substr(1);
+
+        switch (color_code) {
+            case '0':
+                ctx.fillStyle = '#000000';
+                break;
+
+            case '1':
+                ctx.fillStyle = '#0000AA';
+                break;
+
+            case '2':
+                ctx.fillStyle = '#00AA00';
+                break;
+
+            case '3':
+                ctx.fillStyle = '#00AAAA';
+                break;
+
+            case '4':
+                ctx.fillStyle = '#AA0000';
+                break;
+
+            case '5':
+                ctx.fillStyle = '#AA00AA';
+                break;
+                
+            case '6':
+                ctx.fillStyle = '#FFAA00';
+                break;
+
+            case '7':
+                ctx.fillStyle = '#AAAAAA';
+                break;
+
+            case '8':
+                ctx.fillStyle = '#555555';
+                break;
+
+            case '9':
+                ctx.fillStyle = '#5555FF';
+                break;
+                
+            case 'a':
+                ctx.fillStyle = '#55FF55';
+                break;
+
+            case 'b':
+                ctx.fillStyle = '#55FFFF';
+                break;
+
+            case 'c':
+                ctx.fillStyle = '#FF5555';
+                break;
+
+            case 'd':
+                ctx.fillStyle = '#FF55FF';
+                break;
+                
+            case 'e':
+                ctx.fillStyle = '#FFFF55';
+                break;
+
+            case 'f':
+                ctx.fillStyle = '#FFFFFF';
+                break;
+        
+            default:
+                ctx.fillStyle = '#fff';
+                break;
+        }
+
+        const len = ctx.measureText(str);
+
+        ctx.fillText(str, 172 + (x * 600) + offset, 194 + (y * 168));
+
+        offset += len.width;
+    }
+
+    ctx.fillStyle = '#AAAAAA';
+
+    ctx.font = '22px sans-serif';
+    ctx.fillText('Price: ', 172 + (x * 600), 230 + (y * 168));
+    ctx.fillText('Profit: ', 172 + (x * 600), 257 + (y * 168));
+    ctx.fillText('Time left: ', 172 + (x * 600), 284 + (y * 168));
+
+    ctx.fillStyle = '#fff';
+
+    ctx.fillText(formatNumber(item._bid_price) + ' coins', 172 + (x * 600) + ctx.measureText('Price: ').width, 230 + (y * 168));
+    ctx.fillText(formatNumber(item._profit), 172 + (x * 600) + ctx.measureText('Profit: ').width, 257 + (y * 168));
+    ctx.fillText(msToTime(item.end - Date.now()), 172 + (x * 600) + ctx.measureText('Time left: ').width, 284 + (y * 168));
+}
+
+export async function flip_image (items) {
+    const canvas = createCanvas(1200, 654);
+
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#fff';
+
+    ctx.font = 'bold 50px sans-serif';
+
+    ctx.fillText('Skyblock Auctions', 600 - (ctx.measureText('Skyblock Auctions').width / 2), 65);
+
+    ctx.font = '40px sans-serif';
+
+    ctx.fillText('G r e a t   F l i p s', 600 - (ctx.measureText('G r e a t   F l i p s').width / 2), 120);
+
+    for (let i = 0; i < 6; i++) {
+        await drawCard(ctx, items[i], i % 2, Math.floor(i / 2))
+    }
+
+    return canvas;
 }

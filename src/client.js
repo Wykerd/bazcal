@@ -21,7 +21,7 @@ import AdviseHandler from './handlers/advise'
 import LookupHandler from './handlers/lookup'
 import AdvancedHandler from './handlers/advanced'
 import AuctionLookupHandler from './handlers/ahlookup'
-import { resolve } from 'path'
+import AuctionFlipHandler from './handlers/ahflip'
 import { convertNumber } from './utils'
 import { HelpHandler, LicenseHandler } from './handlers/info'
 import { ConfigHandler, ConfigLoader, ConfigGenerator } from './handlers/config'
@@ -34,7 +34,7 @@ parser.nlp.must_include = ['bazcal'];
 
 const bot = new DiscordBot(parser, client)
 
-bot.use(['advanced', 'custom', 'notif', 'notify', 'advise', 'advice', 'config', 'configure', 'conf'], ConfigLoader, []);
+bot.use(['advanced', 'custom', 'notif', 'notify', 'advise', 'advice', 'config', 'configure', 'conf', 'ahflip', 'ahf', 'af'], ConfigLoader, []);
 
 bot.use(['advanced', 'custom'], AdvancedHandler, ['string']);
 
@@ -49,6 +49,8 @@ bot.use(['license', 'about'], LicenseHandler, [])
 bot.use(['lookup', 'search', 'item'], LookupHandler, ['string']);
 
 bot.use(['ahlookup', 'ahl'], AuctionLookupHandler, ['string']);
+
+bot.use(['ahflip', 'ahf', 'af'], AuctionFlipHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)]);
 
 bot.use(['config', 'configure', 'conf'], ConfigHandler,['string']);
 

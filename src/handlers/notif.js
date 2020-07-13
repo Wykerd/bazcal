@@ -15,7 +15,6 @@
  *  along with Bazcal.  If not, see <https://www.gnu.org/licenses/>.
  */
 import item_cache from '../cache'
-import UserOrder from '../models/memberSchema'
 import { item_name, formatNumber, advise, get_user_channel, get_member } from '../utils'
 
 const { NUMBER_EMOJI } = require('../../config.json')

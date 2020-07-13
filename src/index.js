@@ -19,6 +19,7 @@ import mongoose from 'mongoose'
 import { cache_handler } from './cache'
 import channel_purge_handler from './purge'
 import app from './web/app'
+import { cache_flip } from './auc_cache'
 
 mongoose.Promise = global.Promise
 
@@ -27,6 +28,7 @@ mongoose.connect('mongodb://root:example@mongo:27017/', { useNewUrlParser: true,
         schedule.scheduleJob('*/30 * * * * *', cache_handler)
         schedule.scheduleJob('*/1 * * * *', channel_purge_handler)
         app.listen(process.env.PORT ?? 80, () => console.log('Express server started!'))
+        await cache_flip();
     })
     .catch(err => {
         throw err
