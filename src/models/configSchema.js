@@ -89,7 +89,7 @@ const configSchema = new mongoose.Schema({
             },
             pending: {
                 type: String,
-                default: 'You already have other investments pending, react with :thumbsup: to add these to the exiting investments or with :thumbsdown: to remove the old investments?'
+                default: 'You already have other investments pending, react with :thumbsup: to add these to the existing investments or with :thumbsdown: to remove the old investments?'
             },
             confirmed: {
                 type: String,
