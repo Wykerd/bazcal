@@ -18,7 +18,7 @@ import item_cache from '../cache'
 
 import UserScript from '../models/scriptSchema';
 
-import { Parser, InputStream, TokenStream, Environment, StaticallyLink } from "../../lib/index"
+import { Parser, InputStream, TokenStream, Environment, StaticallyLink, DiscordPrettyError } from "../../lib/index"
 
 import { item_name, formatNumber, advise, get_user_channel, get_member, raw_advise, convertNumber } from '../utils'
 import { AdvancedHelp, AdvancedPublicHelp } from './info';
@@ -176,8 +176,11 @@ const advanced_parse = (script) => {
     const in_stream = new InputStream(script);
     const tok_stream = new TokenStream(in_stream);
     const parser = new Parser(tok_stream);
-    const ast = parser.parse();
-    return ast;
+    try {
+        return parser.parse();   
+    } catch (error) {
+        throw new Error(`\`\`\`diff\n${DiscordPrettyError(script, error)}\n\`\`\``)
+    }
 }
 
 const advanced_parse_args = (args) => {

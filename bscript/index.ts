@@ -15,6 +15,16 @@
  *  along with Bazcal.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+export class InputError extends Error {
+    public line: number;
+    public col: number;
+    constructor (message: string, line: number, col: number) {
+        super(message);
+        this.line = line;
+        this.col = col;
+    }
+}
+
 export class InputStream {
     private pos : number = 0;
     private line : number = 1;
@@ -57,14 +67,13 @@ export class InputStream {
      * Throw parse error 
      */
     public error(message : string) {
-        return new Error(`${message} (${this.line}:${this.col})`);
+        return new InputError(`${message} (${this.line}:${this.col})`, this.line, this.col);
     }
 }
 
 export enum TokenType {
     STRING = 'str',
-    INTEGER = 'int',
-    FLOAT = 'float',
+    NUMBER = 'num',
     FUNCTION = 'func',
     PUNCTUATION = 'punc',
     VARIABLE = 'var',
@@ -79,13 +88,13 @@ export interface Token {
 
 export const token_type_regex = {
     punctuation: /(,|;|\(|\)|{|}|\[|\])/i,
-    operator: /(\+|-|\*|\/|%|=|&|\||<|>|!)/i,
+    operator: /(\+|-|\*|\/|%|=|&|\||<|>|!|\^)/i,
     digit: /[0-9]/i,
     identifier_start: /[a-z_]/i,
     identifier_next: /[a-z_0-9]/i
 }
 
-export const keywords = [ "if", "then", "else", "func", "true", "false", "include" ];
+export const keywords = [ "if", "then", "else", "func", "true", "false", "include", "for", "while", "do" ];
 
 export class TokenStream {
     public readonly input : InputStream;
@@ -150,7 +159,7 @@ export class TokenStream {
             return token_type_regex.digit.test(c);
         })
         return {
-            type: float ? TokenType.FLOAT : TokenType.INTEGER,
+            type: TokenType.NUMBER,
             value: parseFloat(num_str)
         }
     }
@@ -217,7 +226,7 @@ export const PRECEDENCE : { [key:string]: number } = {
     "&&": 3,
     "<": 7, ">": 7, "<=": 7, ">=": 7, "==": 7, "!=": 7,
     "+": 10, "-": 10,
-    "*": 20, "/": 20, "%": 20,
+    "*": 20, "/": 20, "%": 20, "**": 20, "^": 20
 };
 
 export const ASSIGN_OPERATORS = [ '=', /*'+=', '-=', '^=', '~=', '|='*/ ];
@@ -388,6 +397,50 @@ export class Parser {
         return ret;
     }
 
+    private parse_while() : ASTNode {
+        if (!this.is_punc("(")) throw this.unexpected();
+        this.stream.next();
+        const cond = this.parse_expression();
+        if (this.is_punc(')')) this.stream.next();
+        else throw this.unexpected();
+        if (!this.is_punc('{')) {
+            if (this.is_type(TokenType.KEYWORD) && this.stream.current()?.value === 'do') this.stream.next();
+            else throw this.unexpected();
+        }
+        const loop = this.parse_expression();
+        return {
+            type: 'while',
+            cond,
+            loop
+        };
+    }
+
+    private parse_for () : ASTNode {
+        if (!this.is_punc("(")) throw this.unexpected();
+        this.stream.next();
+        const counter = this.parse_expression();
+        if (this.is_punc(';')) this.stream.next();
+        else throw this.unexpected();
+        const cond = this.parse_expression();
+        if (this.is_punc(';')) this.stream.next();
+        else throw this.unexpected();
+        const inc = this.parse_expression();
+        if (this.is_punc(')')) this.stream.next();
+        else throw this.unexpected();
+        if (!this.is_punc('{')) {
+            if (this.is_type(TokenType.KEYWORD) && this.stream.current()?.value === 'do') this.stream.next();
+            else throw this.unexpected();
+        }
+        const loop = this.parse_expression();
+        return {
+            type: 'for',
+            counter,
+            cond,
+            inc,
+            loop
+        };
+    }
+
     private parse_expression () : ASTNode {
         const tok = this.stream.current();
 
@@ -429,20 +482,33 @@ export class Parser {
                 return expr;
             }
 
-            // this is a boolean
-            if (tok.type === TokenType.KEYWORD && (tok.value === 'true' || tok.value === 'false')) {
-                return {
-                    type: 'bool',
-                    value: tok.value === 'true'
-                }
-            }
+            if (tok.type === TokenType.KEYWORD) {
+                switch (tok.value) {
+                    // booleans
+                    case 'false':
+                    case 'true':
+                        return {
+                            type: 'bool',
+                            value: tok.value === 'true'
+                        }
+                    
+                    case 'include':
+                        if (next_tok.type === TokenType.STRING) {
+                            this.stream.next();
+                            return {
+                                type: 'include',
+                                value: next_tok.value
+                            }
+                        } else throw this.unexpected();
+                    
+                    case 'for':
+                        return this.parse_for();
 
-            // this is an include
-            if ((tok.type === TokenType.KEYWORD) && (tok.value === 'include') && (next_tok.type === TokenType.STRING)) {
-                this.stream.next();
-                return {
-                    type: 'include',
-                    value: next_tok.value
+                    case 'while':
+                        return this.parse_while();
+
+                    default:
+                        break;
                 }
             }
         }
@@ -455,7 +521,7 @@ export class Parser {
 
         while (!this.stream.isEof()) {
             seq.push(this.parse_expression());
-            if (!this.is_punc(";")) throw this.unexpected();
+            if (!this.is_punc(";")) throw this.stream.input.error('Expected semi colon but got ' + JSON.stringify(this.stream.current()));
             this.stream.next();
         }
 
@@ -535,14 +601,15 @@ export class Environment {
             case ">=" : return num(a) >= num(b);
             case "==" : return a === b;
             case "!=" : return a !== b;
+            case "**" : return Math.pow(num(a), num(a));
+            case "^"  : return num(a) ^ num(b);
         }
         throw new Error("Runtime error: Can't apply operator " + op);
     }
 
     public evaluate(exp: ASTNode) : any {
         switch (exp.type) {
-            case "int":
-            case "float":
+            case "num":
             case "str":
             case "bool":
                 return exp.value;
@@ -565,11 +632,42 @@ export class Environment {
                 const func : any = this.evaluate(exp.func);
                 return func.apply(null, exp.args.map((arg : any) => this.evaluate(arg))) // remove this to keep function in scope
             case "sequence":
-                let val = false;
-                exp.seq.forEach((e: any) => {
-                    val = this.evaluate(e)
-                });
-                return val;
+                {
+                    let val = false;
+                    exp.seq.forEach((e: any) => {
+                        val = this.evaluate(e)
+                    });
+                    return val;
+                }
+            case "for":
+                {
+                    let val = false;
+                    let counter = this.evaluate(exp.counter.right);
+
+                    while (true) {
+                        const scope = this.child();
+                        scope.def(exp.counter.left.value, counter);
+                        const continue_loop = scope.evaluate(exp.cond);
+                        if (!continue_loop) break;
+                        val = scope.evaluate(exp.loop);
+                        counter = scope.evaluate(exp.inc);
+                    }
+
+                    return val;
+                }
+            case "while":
+                {
+                    let val = false;
+
+                    while (true) {
+                        const scope = this.child();
+                        const continue_loop = scope.evaluate(exp.cond);
+                        if (!continue_loop) break;
+                        val = scope.evaluate(exp.loop);
+                    }
+
+                    return val;
+                }
             default:
                 throw new Error('Runtime error: Cannot handle expression of type ' + exp.type)
         }
@@ -585,4 +683,20 @@ export async function StaticallyLink (ast: ASTNode[], loader: (name: string) => 
         }
     }
     return ast;
+}
+
+export function PrettyInputError (input: string, error: InputError) {
+    const pre_line = input.split('\n')[error.line - 2];
+    const line = input.split('\n')[error.line - 1];
+    let ptr = '';
+    for (let i = 0; i < error.col - 1; i++) {
+        ptr += ' ';
+    }
+    ptr += `^ ${error.message}`;
+    return `${pre_line}\n${line}\n${ptr}`
+}
+
+export function DiscordPrettyError (input: string, error: InputError) {
+    const lines = PrettyInputError(input, error).split('\n');
+    return `+ ${lines[0]}\n+ ${lines[1]}\n- ${lines[2]}`;
 }
