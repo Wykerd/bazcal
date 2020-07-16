@@ -327,14 +327,16 @@ const advanced_runner = async (message, ast, args) => {
     // Runtime builtins
     env.def("arguments", args);
     // linker
-    const bin = await StaticallyLink(ast, async (name) => {
+    const loader = async (name) => {
         const split_name = name.split('/');
         let script_doc;
         if (split_name.length === 2) script_doc = await UserScript.findOne({ user_id: split_name[0], script_name: split_name[1] });
-        else script_doc = await UserScript.findOne({ user_id: message.author.id, script_public_name: name });
+        else script_doc = await UserScript.findOne({ script_public_name: name });
         if (!script_doc) throw Error('No script found with the name ' + name);
-        return script_doc.ast;
-    });
+        return await StaticallyLink(script_doc.ast, loader);
+    };
+    
+    const bin = await StaticallyLink(ast, loader);
     // evaluate the ast output from the parser or saved in the db
     env.evaluate({
         type: "sequence",
