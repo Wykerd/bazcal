@@ -14,27 +14,34 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with Bazcal.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+ // Import the displaynames for each item
 const items = require('../items.json');
 
+// Used to generate the image for the auction flips
 import { getGlyph, getItems } from 'sb-glyph';
-
 import { loadImage, createCanvas } from 'canvas';
 
+// Imports the item cache for Bazaar
 import item_cache from './cache'
 
 import User from './models/memberSchema'
 import { client } from './client';
 import sorted_flips from './auc_cache';
 
+// Limits a value between 2 numbers (limit(8, 2, 5) -> 5)
 function limit(val, min, max) {
     return val < min ? min : (val > max ? max : val)
 }
 
 export async function get_member (message) {
+    // Tries to find a member with the same ID as the message that has been sent
     let member = await User.findOne({ user_id: message.author.id, server_id: message.guild.id })
 
+    // Tries to get the user's channel or creates one for him
     const channel = await get_user_channel(message, member);
 
+    // Creates a new member if no member was found with the channel saved
     if (!member) {
         member = new User({
             user_id: message.author.id,
@@ -54,8 +61,10 @@ export async function get_member (message) {
  * @param {*} member 
  */
 export async function get_user_channel (message, member) {
+    // Checks to see if the user has an existing channel
     if (member?.channel_id) {
         try {
+            // fetches the channel from guild
             const channel = await message.guild.channels.cache.get(member.channel_id)
             if (channel) return channel;
         } catch (error) {
@@ -66,9 +75,11 @@ export async function get_user_channel (message, member) {
     const server = message.guild;
     const name = message.author.tag.replace(/#/g, '_');
 
+    // Channel does not exist, creates one with universal name
     const channel = await server.channels.create(`bz_${name}`, { 
         type: 'text', 
         topic: 'This channel will delete after 3 minutes in which you have no orders pending', 
+        // Gives the bot and user permissions to view the channel (admins always get access)
         permissionOverwrites: [
             {
                 id: message.guild.id,
@@ -89,46 +100,71 @@ export async function get_user_channel (message, member) {
     return channel;
 }
 
-export function raw_advise (balance, time = 5, include_stablity = true) {
+// Uses information and translates it to expand the existing array with usable values
+export function raw_advise (balance, time = 5) {
     const unsorted = []
     for (const product_name in item_cache) {
+        // Fetches the item data from the cache in memory
         const product = item_cache[product_name]
+
+        // Calculates profit per item with tax included
         const profit = (product.sell * 0.99) - product.buy
 
+        // Takes the minimum volume per week, convers it to 5 minutes, limits it to your balance
         const tvolume = (Math.min(product.volume, product.svolume) / 10080) * time
         const evolume = Math.floor(limit(tvolume, 0, balance / product.buy))
 
+        // Times the effective volume you can afford with the profit of the item
         const eprofit = (evolume * profit)
 
+        // Pushes the values to an array
         unsorted.push({
             'name': product_name,
             'evolume': evolume,
             'invested': (product.buy * evolume),
-            'pinvested': (((product.buy * evolume) * 100) / balance).toFixed(1),
             'eprofit': eprofit,
+            // Percentage money invested and profit
+            'pinvested': (((product.buy * evolume) * 100) / balance).toFixed(1),
             'pprofit': ((profit / product.buy) * 100).toFixed(1),
+
+            // Calculates the trend of the item sell value with EMA
             'gradient': product.sell - product.sell_ema
         })
     }
     return unsorted;
 }
 
+/* Uses raw_advise to aquire the expanded array
+Used to sort and filter the array with predefined conditions */
 export function advise(balance, count = 6, time = 5, include_stablity = true, volume_cap = 50000) {
+    // Calls the function to get the expanded array
     const unsorted = raw_advise(balance, time, include_stablity);
 
+    // Basic Sort function
     const sorted = unsorted.sort((a, b) => {
         return b.eprofit - a.eprofit
     })
 
-    if (include_stablity) return sorted.filter(item => (item_cache[item.name].buy > item_cache[item.name].buy_ema) && (item_cache[item.name].sell > item_cache[item.name].sell_ema) && (item.evolume > (volume_cap * 10080 / time))).slice(0, count)
-    
+    // Check if it should be filtered
+    if (include_stablity) {
+        // Define filter conditions
+        const buy_trend = (item) => item_cache[item.name].buy > item_cache[item.name].buy_ema;
+        const sell_trend = (item) => item_cache[item.name].sell > item_cache[item.name].sell_ema;
+        const low_volume_filter = (item) => item.evolume > (volume_cap * 10080 / time))).slice(0, count);
+
+        return sorted.filter(item => buy_trend(item) && sell_trend(item) && low_volume_filter(item)).slice(0, count);
+    }
+
+    // Returns unfiltered array
     return sorted.slice(0, count);
 }
 
+// Used to convert user typed item names to usable onces (ghast tear -> GHAST_TEAR)
 export function item_name (item_id) {
     return items[item_id]?.name ?? item_id.replace('_', ' ');
 }
 
+// Converts short numbering to a complete integer (10M -> 10000000)
 export function convertNumber(input) {
     let exp = /[A-z]+/.exec(input)
     let num = /[+-]?([0-9]*[.])?[0-9]+/.exec(input)
@@ -144,6 +180,7 @@ export function convertNumber(input) {
 
 const formatter = new Intl.NumberFormat()
 
+// Formats a big number into more readable number (10000000 -> 10M)
 export function formatNumber(number) {
     if (number >= 1000000) {
         return formatter.format(round(number / 1000000, 2)) + 'M'
@@ -154,8 +191,13 @@ export function formatNumber(number) {
     }
 }
 
+// Used to round a number to a certain amount of decimals (2.016456 -> 2.02)
 export function round(value, decimals) {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals)
+}
+
+export function advise_formatter (array) {
+    return array.map((item, i) => {`${i + 1}: **${_0.item_name(item.name)}**\nQuantity: **${item.evolume}**\nInvested: **${_0.format_number(item.invested)}** _(${item.pinvested}%)_\nEstimated Profit: **${_0.format_number(item.eprofit)}** _(${item.pprofit}%)_\nSell price trend: **${item.gradient < 0 ? 'Product sell value decreasing' : 'Product sell value increasing'}**`}).join('\n\n');
 }
 
 export function ah_suggest (balance, time, count = 6, top = 0.25) {
@@ -185,6 +227,7 @@ export function ah_suggest (balance, time, count = 6, top = 0.25) {
     return picks;
 }
 
+// Converts milliseconds to a readable time for the users
 export function msToTime(ms) {
     const secs = parseInt((ms/1000)%60)
     , mins = parseInt((ms/(1000*60))%60)

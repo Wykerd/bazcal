@@ -25,8 +25,10 @@ const item_name_obj = require('../../items.json');
  * @param {*} args 
  */
 const handler = async (message, args) => {
+    // Replaces to universal item name and finds it in the cache
     let item = item_cache[args[0].toUpperCase().replace(/ /g, '_')]
 
+    // Attempts to find another name for the item
     if (!item) {
         const item_id = Object.keys(item_name_obj).find(id => item_name_obj[id].name.toUpperCase() === args[0].toUpperCase());
         if (!item_id) throw new Error('Item with name **' + args[0] + '** not found');

@@ -21,19 +21,21 @@ import { item_name, formatNumber, advise, get_user_channel, get_member } from '.
  * @param {*} args 
  */
 const handler = async (message, args) => {
+    // Gets the user and userchannel
     const member = await get_member(message);
     const channel = await get_user_channel(message, member);
 
     member.last_message = new Date();
-    
     member.channel_id = channel.id;
 
+    // Saves new user info
     await member.save();
 
     const time = parseInt(args[1])
 
     const defaults = message._server_doc.advice_defaults;
 
+    // Calls the advice command in utils
     const sorted_input = advise(args[0], message._server_doc.results, Number.isNaN(time) ? defaults.timeframe : time, args[2] ? args[2].toLowerCase() === 'true' : defaults.include_stablity);
 
     /*
@@ -50,6 +52,7 @@ const handler = async (message, args) => {
     sell_trend
     */
 
+    // Formatting for response
     let response = message._server_doc.message_templates.advice.header
         .replace(/{{balance}}/gi, args[0]);
 

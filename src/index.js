@@ -23,11 +23,16 @@ import { cache_flip } from './auc_cache'
 
 mongoose.Promise = global.Promise
 
+// Connects to the MongoDB and scedules all the nessasary services to run which needed to be recorded
 mongoose.connect('mongodb://root:example@mongo:27017/', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true })
     .then(async () => {
+        // Scedule to update the [Bazaar] cache every 30 seconds 
         schedule.scheduleJob('*/30 * * * * *', cache_handler)
+        // Scedule to check which channels to delete every second
         schedule.scheduleJob('*/1 * * * *', channel_purge_handler)
+        // Starts the web-app for Bazcal
         app.listen(process.env.PORT ?? 80, () => console.log('Express server started!'))
+        // Starts the auction cache process
         await cache_flip();
     })
     .catch(err => {

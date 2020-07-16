@@ -15,7 +15,7 @@
  *  along with Bazcal.  If not, see <https://www.gnu.org/licenses/>.
  */
 import item_cache from '../cache'
-import { item_name, formatNumber, advise, get_user_channel, get_member } from '../utils'
+import { item_name, formatNumber, advise, get_user_channel, get_member, advise_formatter } from '../utils'
 
 const { NUMBER_EMOJI } = require('../../config.json')
 
@@ -37,7 +37,7 @@ const handler = async (message, args) => {
 
         if (sorted_input.length === 0) await channel.send(templates.no_results);
 
-        const main = await channel.send(`<@${member.user_id}>\n` + templates.header + advice_message(sorted_input) + '\n\n' + templates.footer)
+        const main = await channel.send(`<@${member.user_id}>\n` + templates.header + advice_formatter(sorted_input) + '\n\n' + templates.footer)
 
         // Setup for the react
         for (let i = 0; i < sorted_input.length; i++) {
@@ -135,6 +135,7 @@ const handler = async (message, args) => {
         await member.save()
     }
     
+    // Checks to see if they should sell something while they were picking
     if (channel) {
         channel.send(templates.confirmed)
 
@@ -150,30 +151,6 @@ const handler = async (message, args) => {
 
         if (updated) await member.save();
     }
-}
-
-/**
- * @param {import('discord.js').Message} message 
- */
-export function TradeConverseAdapter (message, entities, nlp_res) {
-    const nums = entities.filter(entity => entity.entity === 'number');
-
-    if (nums.length === 0) throw new Error('I couldn\'t find any balance referenced in your message...');
-
-    if (message.guild) message.channel.send(`<@${message.author.id}> ${nlp_res?.answer || 'Check your channel'}`)
-
-    return handler(message, nums.map(num => num.resolution?.value ?? 0));
-}
-
-function advice_message(sorted_input) {
-    let final_message = ''
-    for (const item in sorted_input) {
-        final_message += `${parseInt(item) + 1}: **${item_name(sorted_input[item].name)}**\n`
-        final_message += `Quantity: **${sorted_input[item].evolume}**\n`
-        final_message += `Invested: **${formatNumber(sorted_input[item].invested)}** _(${sorted_input[item].pinvested}%)_\n`
-        final_message += `Minimum Profit: **${formatNumber(sorted_input[item].eprofit.toFixed(2))}** _(${sorted_input[item].pprofit}%)_\n\n`
-    }
-    return final_message.trim();
 }
 
 export default handler
