@@ -18,7 +18,7 @@ import item_cache from '../cache'
 
 import UserScript from '../models/scriptSchema';
 
-import { Parser, InputStream, TokenStream, Environment } from "../../lib/index"
+import { Parser, InputStream, TokenStream, Environment, StaticallyLink } from "../../lib/index"
 
 import { item_name, formatNumber, advise, get_user_channel, get_member, raw_advise, convertNumber } from '../utils'
 import { AdvancedHelp, AdvancedPublicHelp } from './info';
@@ -278,7 +278,7 @@ const advanced_runner = async (message, ast, args) => {
             if (messages_sent === 5) message.channel.send(`<@${message.author.id}> Maximum send_message call limit reached`);
             messages_sent++;
             if (messages_sent > 5) return;
-            await (await channel).send(msg);
+            await (await channel).send(('' + msg).replace(/<@/g, '\\<\\@'));
         } catch (error) {
             message.channel.send(`<@${message.author.id}> Error: Runtime error: send_message threw error: ${error.message}`);
         }
@@ -326,6 +326,15 @@ const advanced_runner = async (message, ast, args) => {
     });
     // Runtime builtins
     env.def("arguments", args);
+    // linker
+    const bin = await StaticallyLink(ast, async (name) => {
+        const split_name = name.split('/');
+        let script_doc;
+        if (split_name.length === 2) script_doc = await UserScript.findOne({ user_id: split_name[0], script_name: split_name[1] });
+        else script_doc = await UserScript.findOne({ user_id: message.author.id, script_public_name: name });
+        if (!script_doc) throw Error('No script found with the name ' + name);
+        return script_doc.ast;
+    });
     // evaluate the ast output from the parser or saved in the db
     env.evaluate({
         type: "sequence",

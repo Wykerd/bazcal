@@ -85,7 +85,7 @@ export const token_type_regex = {
     identifier_next: /[a-z_0-9]/i
 }
 
-export const keywords = [ "if", "then", "else", "func", "true", "false" ];
+export const keywords = [ "if", "then", "else", "func", "true", "false", "include" ];
 
 export class TokenStream {
     public readonly input : InputStream;
@@ -433,7 +433,16 @@ export class Parser {
             if (tok.type === TokenType.KEYWORD && (tok.value === 'true' || tok.value === 'false')) {
                 return {
                     type: 'bool',
-                    value: next_tok.value === 'true'
+                    value: tok.value === 'true'
+                }
+            }
+
+            // this is an include
+            if ((tok.type === TokenType.KEYWORD) && (tok.value === 'include') && (next_tok.type === TokenType.STRING)) {
+                this.stream.next();
+                return {
+                    type: 'include',
+                    value: next_tok.value
                 }
             }
         }
@@ -459,8 +468,9 @@ export class Environment {
     private parent: Environment | undefined;
 
     constructor (parent?: Environment) {
-        this.vars = Object.create(parent ? parent.vars : null);
+        this.vars = {};
         this.parent = parent;
+        this.find = this.find.bind(this);
     }
 
     public child() {
@@ -470,19 +480,20 @@ export class Environment {
     public find(name: string) {
         let scope : Environment | undefined = this;
         while (scope) {
-            if (scope.vars[name]) return scope;
+            if (scope.vars.hasOwnProperty(name)) return scope;
             scope = scope.parent;
         }
     }
 
     public get (name: string) {
-        if (name in this.vars) return this.vars[name];
+        const scope = this.find(name);
+        if (scope) return scope.vars[name];
         throw new Error(`Runtime error: Undefined variable ${name}`);
     }
 
     public set (name : string, value : any) {
         const scope = this.find(name);
-        return (scope || this).vars[name] = value;
+        return (scope ? scope : this).vars[name] = value;
     }
 
     public def (name : string, value: any) {
@@ -563,6 +574,17 @@ export class Environment {
                 throw new Error('Runtime error: Cannot handle expression of type ' + exp.type)
         }
     }
+}
+
+export async function StaticallyLink (ast: ASTNode[], loader: (name: string) => Promise<ASTNode[]>) {
+    for (let i = 0; i < ast.length; i++) {
+        const node = ast[i];
+        if (node.type === 'include') {
+            const lib = await loader(node.value);
+            ast.splice(i, 1, ...lib);
+        }
+    }
+    return ast;
 }
 
 export class Transpiler {
