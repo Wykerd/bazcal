@@ -78,7 +78,7 @@ export async function get_user_channel (message, member) {
     // Channel does not exist, creates one with universal name
     const channel = await server.channels.create(`bz_${name}`, { 
         type: 'text', 
-        topic: 'This channel will delete after 3 minutes in which you have no orders pending', 
+        topic: 'This channel will be deleted after 3 minutes if you have no pending orders', 
         // Gives the bot and user permissions to view the channel (admins always get access)
         permissionOverwrites: [
             {
