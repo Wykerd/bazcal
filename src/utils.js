@@ -136,7 +136,7 @@ export function raw_advise (balance, time = 5) {
 
 /* Uses raw_advise to aquire the expanded array
 Used to sort and filter the array with predefined conditions */
-export function advise(balance, count = 6, time = 5, include_stablity = true, volume_cap = 50000) {
+export function advise(balance, count = 6, time = 5, include_stablity = true /*, volume_cap = 50000*/) {
     // Calls the function to get the expanded array
     const unsorted = raw_advise(balance, time, include_stablity);
 
@@ -150,9 +150,9 @@ export function advise(balance, count = 6, time = 5, include_stablity = true, vo
         // Define filter conditions
         const buy_trend = (item) => item_cache[item.name].buy > item_cache[item.name].buy_ema;
         const sell_trend = (item) => item_cache[item.name].sell > item_cache[item.name].sell_ema;
-        const low_volume_filter = (item) => item.evolume > (volume_cap * 10080 / time);
+        // const low_volume_filter = (item) => item.evolume > (volume_cap * 10080 / time);
 
-        return sorted.filter(item => buy_trend(item) && sell_trend(item) && low_volume_filter(item)).slice(0, count);
+        return sorted.filter(item => buy_trend(item) && sell_trend(item) /*&& low_volume_filter(item)*/).slice(0, count);
     }
 
     // Returns unfiltered array
