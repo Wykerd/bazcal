@@ -52,7 +52,7 @@ const handler = async (message, args) => {
         const attachment = new MessageAttachment((await flip_image(sorted_input)).toBuffer('image/png'), 'suggestions.png');   
         const main = await channel.send(`<@${member.user_id}> React to receive the command to locate the auction. Confirm with :thumbsup:`, attachment);
 
-        // Setup for the react
+        // Setup for the reactions
         for (let i = 0; i < sorted_input.length; i++) {
             await main.react(NUMBER_EMOJI[i])
         }
@@ -63,7 +63,7 @@ const handler = async (message, args) => {
             return NUMBER_EMOJI.includes(reaction.emoji.name) && user.id === userID
         }
 
-        // Asks which orders he would like to invest in
+        // Asks which orders user would like to invest in
         const reaction_array = []
 
         /**
@@ -106,7 +106,7 @@ const handler = async (message, args) => {
     // just always save I'm not even gonna check anymore
     await member.save();
 
-    await message.channel.send('Check you channel :-)');
+    await message.channel.send('Check your channel :-)');
 
     const auctions = await send_flips(channel);
 
