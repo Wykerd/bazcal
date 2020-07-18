@@ -150,7 +150,7 @@ export function advise(balance, count = 6, time = 5, include_stablity = true, vo
         // Define filter conditions
         const buy_trend = (item) => item_cache[item.name].buy > item_cache[item.name].buy_ema;
         const sell_trend = (item) => item_cache[item.name].sell > item_cache[item.name].sell_ema;
-        const low_volume_filter = (item) => item.evolume > (volume_cap * 10080 / time))).slice(0, count);
+        const low_volume_filter = (item) => item.evolume > (volume_cap * 10080 / time);
 
         return sorted.filter(item => buy_trend(item) && sell_trend(item) && low_volume_filter(item)).slice(0, count);
     }

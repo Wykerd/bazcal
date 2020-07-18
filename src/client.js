@@ -21,7 +21,7 @@ import { CommandParser, DiscordBot } from '@wykerd/discord-framework'
 import { convertNumber } from './utils'
 
 // Imports all the command handlers (functions)
-import TradeHandler, { TradeConverseAdapter } from './handlers/notif'
+import TradeHandler from './handlers/notif'
 import { HelpHandler, LicenseHandler, InviteHandler, SupportHandler } from './handlers/info'
 import { ConfigHandler, ConfigLoader, ConfigGenerator } from './handlers/config'
 import AdviseHandler from './handlers/advise'
