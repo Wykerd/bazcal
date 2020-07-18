@@ -13,3 +13,6 @@ data/
 runWithEnv.sh
 keys/
 docker-compose.yml
+
+# VSCode config
+.vscode/
