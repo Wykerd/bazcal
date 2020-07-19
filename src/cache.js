@@ -109,7 +109,7 @@ export const cache_handler = async () => {
                     const channel = client.guilds.cache.get(member.server_id)?.channels?.cache?.get(member.channel_id);
                     channel?.send(`<@${member.user_id}> You need to sell all your **${item_name(item_id)}** right now!`)?.catch(()=>{});
                     member.orders = member.orders.filter(ord => ord !== item_id);
-                    if (!member.orders.length) channel?.setTopic('No orders in queue. This channel will delete in 3 minutes after the last message has been sent.').catch(()=>{});
+                    if (!member.orders.length) channel?.setTopic('No orders in queue. This channel will be deleted in 3 minutes after the last message has been sent.').catch(()=>{});
                     member.last_message = new Date();
                     console.log(await member.save());   
                 } catch (error) {
