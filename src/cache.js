@@ -27,8 +27,10 @@ const k = 2 / (range + 1);
 
 // Gets the current cache from the file
 export const cache_fp = path.resolve(process.env.DATA_DIR, 'cache.json');
+export const dcache_fp = path.resolve(process.env.DATA_DIR, 'dcache.json');
 
 let item_cache = {};
+let demand_cache = {};
 
 try {
     item_cache = JSON.parse(fs.readFileSync(cache_fp, 'utf-8'))
@@ -38,6 +40,7 @@ try {
 
 // The function used to backup the cache in case of memory overflow or failure
 export const backupCache = () => fs.promises.writeFile(cache_fp, JSON.stringify(item_cache));
+export const backupDCache = () => fs.promises.writeFile(dcache_fp, JSON.stringify(demand_cache));
 
 // Handler called in index.js every 30 seconds
 export const cache_handler = async () => {
@@ -67,6 +70,8 @@ export const cache_handler = async () => {
             if (item.name === "ENCHANTED_CARROT_ON_A_STICK") continue;
 
             // Checks to see if a new item must be added to cache (in a new update for example)
+            if (!demand_cache[item.name]) demand_cache[item.name] = {volume: [item.volume], svolume: [item.svolume]};
+
             if (!item_cache[item.name]) {
                 item_cache[item.name] = {
                     buy: item.buy,
@@ -76,6 +81,7 @@ export const cache_handler = async () => {
                     buy_ema: item.buy,
                     sell_ema: item.sell
                 }
+                // Add a new item to the cache
             } else {
                 // Loads the previous values to include the new ones
                 const pre_b_ema = item_cache[item.name].buy_ema;
@@ -92,6 +98,14 @@ export const cache_handler = async () => {
                 // Uses a the EMA formula to move the new value
                 item_cache[item.name].buy_ema = item.buy * k + pre_b_ema * (1 - k);
                 item_cache[item.name].sell_ema = item.sell * k + pre_s_ema * (1 - k);
+
+                demand_cache[item.name].volume.push(item.volume);
+                demand_cache[item.name].svolume.push(item.svolume);
+
+                if (demand_cache[item.name].volume.length > 10) {
+                    demand_cache[item.name].volume.shift()
+                    demand_cache[item.name].svolume.shift()
+                }
 
                 // Checks the item's position with the EMA prediction definition
                 if ((pre_b <= pre_b_ema) && (item.buy > item_cache[item.name].buy_ema)) buy_point.push(item.name);
@@ -120,9 +134,10 @@ export const cache_handler = async () => {
 
         // Mades a backup / copy of the cache stored in memory
         await backupCache();
+        await backupDCache();
     } catch (error) {
         console.log(error);
     }
 }
 
-export default item_cache;
+export { item_cache, demand_cache };

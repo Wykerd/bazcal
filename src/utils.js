@@ -23,7 +23,7 @@ import { getGlyph, getItems } from 'sb-glyph';
 import { loadImage, createCanvas } from 'canvas';
 
 // Imports the item cache for Bazaar
-import item_cache from './cache'
+import { item_cache, demand_cache } from './cache'
 
 import User from './models/memberSchema'
 import { client } from './client';
@@ -101,18 +101,19 @@ export async function get_user_channel (message, member) {
 }
 
 // Uses information and translates it to expand the existing array with usable values
-export function raw_advise (balance, time = 5) {
+export function raw_advise (balance) {
     const unsorted = []
     for (const product_name in item_cache) {
         // Fetches the item data from the cache in memory
         const product = item_cache[product_name]
+        const demand = demand_cache[product_name]
 
         // Calculates profit per item with tax included
         const profit = (product.sell * 0.99) - product.buy
 
         // Takes the minimum volume per week, convers it to 5 minutes, limits it to your balance
-        const tvolume = (Math.min(product.volume, product.svolume) / 10080) * time
-        const evolume = Math.floor(limit(tvolume, 0, balance / product.buy))
+        const tvolume = Math.min(product.volume - demand.volume[demand.volume.length - 1], product.svolume - demand.svolume[demand.svolume.length - 1]);
+        const evolume = Math.floor(limit(tvolume, 0, balance / product.buy));
 
         // Times the effective volume you can afford with the profit of the item
         const eprofit = (evolume * profit)
@@ -136,9 +137,10 @@ export function raw_advise (balance, time = 5) {
 
 /* Uses raw_advise to aquire the expanded array
 Used to sort and filter the array with predefined conditions */
-export function advise(balance, count = 6, time = 5, include_stablity = true /*, volume_cap = 50000*/) {
+
+export function advise(balance, count = 6, include_stablity = true, volume_cap = 50) {
     // Calls the function to get the expanded array
-    const unsorted = raw_advise(balance, time, include_stablity);
+    const unsorted = raw_advise(balance);
 
     // Basic Sort function
     const sorted = unsorted.sort((a, b) => {
@@ -150,7 +152,8 @@ export function advise(balance, count = 6, time = 5, include_stablity = true /*,
         // Define filter conditions
         const buy_trend = (item) => item_cache[item.name].buy > item_cache[item.name].buy_ema;
         const sell_trend = (item) => item_cache[item.name].sell > item_cache[item.name].sell_ema;
-        // const low_volume_filter = (item) => item.evolume > (volume_cap * 10080 / time);
+
+        const low_volume_filter = (item) => item.evolume > volume_cap;
 
         return sorted.filter(item => buy_trend(item) && sell_trend(item) /*&& low_volume_filter(item)*/).slice(0, count);
     }

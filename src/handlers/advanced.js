@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with Bazcal.  If not, see <https://www.gnu.org/licenses/>.
  */
-import item_cache from '../cache'
+import { item_cache } from '../cache'
 
 import UserScript from '../models/scriptSchema';
 
