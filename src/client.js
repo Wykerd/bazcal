@@ -26,8 +26,6 @@ import { HelpHandler, LicenseHandler, InviteHandler, SupportHandler } from './ha
 import { ConfigHandler, ConfigLoader, ConfigGenerator } from './handlers/config'
 import AdviseHandler from './handlers/advise'
 import LookupHandler from './handlers/lookup'
-import AdvancedHandler from './handlers/advanced'
-import AuctionLookupHandler from './handlers/ahlookup'
 import AuctionFlipHandler from './handlers/ahflip'
 
 // Initailize the bot's variables and parsers
@@ -38,9 +36,7 @@ const parser = new CommandParser('!bz')
 const bot = new DiscordBot(parser, client)
 
 // Define all the bot's commands and make it possible to use them
-bot.use(['advanced', 'custom', 'notif', 'notify', 'advise', 'advice', 'config', 'configure', 'conf', 'ahflip', 'ahf', 'af'], ConfigLoader, []);
-
-bot.use(['advanced', 'custom'], AdvancedHandler, ['string']);
+bot.use(['notif', 'notify', 'advise', 'advice', 'config', 'configure', 'conf', 'ahflip', 'ahf', 'af'], ConfigLoader, []);
 
 bot.use(['notif', 'notify', 'n'], TradeHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)])
 
@@ -51,8 +47,6 @@ bot.use(['help', '?'], HelpHandler, [])
 bot.use(['license', 'about'], LicenseHandler, [])
 
 bot.use(['lookup', 'search', 'item'], LookupHandler, ['string']);
-
-bot.use(['ahlookup', 'ahl'], AuctionLookupHandler, ['string']);
 
 bot.use(['ahflip', 'ahf', 'af'], AuctionFlipHandler, [amount => /\d[A-z]/.test(amount) ? convertNumber(amount) : parseFloat(amount)]);
 

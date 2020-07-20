@@ -37,13 +37,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx babel src --out-dir dist",
-    "start": "node dist/index",
-    "build:bscript": "npx tsc",
-    "build:bscript:web": "npx webpack -p --config ./bscript/webpack.config.js --config-name ui",
-    "build:bscript:runtime": "npx webpack -p --config ./bscript/webpack.config.js --config-name runtime",
-    "build:bscript:all": "npx webpack -p --config ./bscript/webpack.config.js",
-    "devserver:ui": "npx webpack-dev-server --config ./bscript/webpack.config.js --config-name ui"
+    "start": "node dist/index"
   },
-  "private": true,
-  "browserslist": "> 0.25%, not dead"
+  "private": true
 }
