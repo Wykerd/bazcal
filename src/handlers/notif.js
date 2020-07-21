@@ -33,7 +33,7 @@ const handler = async (message, args) => {
      * @param {import('discord.js').TextChannel} channel 
      */
     async function send_advice(channel) {
-        const sorted_input = advise(args[0], message._server_doc.results);
+        const sorted_input = advise(args[0]);
 
         if (sorted_input.length === 0) await channel.send(templates.no_results);
 

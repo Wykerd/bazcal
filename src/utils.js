@@ -112,7 +112,7 @@ export function raw_advise (balance) {
         const profit = (product.sell * 0.99) - product.buy
 
         // Takes the minimum volume per week, convers it to 5 minutes, limits it to your balance
-        const tvolume = Math.min(product.volume - demand.volume[demand.volume.length - 1], product.svolume - demand.svolume[demand.svolume.length - 1]);
+        const tvolume = Math.min(product.volume - demand.volume[0], product.svolume - demand.svolume[0]);
         const evolume = Math.floor(limit(tvolume, 0, balance / product.buy));
 
         // Times the effective volume you can afford with the profit of the item
@@ -155,7 +155,7 @@ export function advise(balance, count = 6, include_stablity = true, volume_cap =
 
         const low_volume_filter = (item) => item.evolume > volume_cap;
 
-        return sorted.filter(item => buy_trend(item) && sell_trend(item) /*&& low_volume_filter(item)*/).slice(0, count);
+        return sorted.filter(item => buy_trend(item) && sell_trend(item) && low_volume_filter(item)).slice(0, count);
     }
 
     // Returns unfiltered array

@@ -31,12 +31,13 @@ const handler = async (message, args) => {
     // Saves new user info
     await member.save();
 
-    const time = parseInt(args[1])
+    const count = args[1] ? parseInt(args[1]) : 10
+    const volume_cap = args[3] ? parseInt(args[3]) : 50
 
     const defaults = message._server_doc.advice_defaults;
 
     // Calls the advice command in utils
-    const sorted_input = advise(args[0], message._server_doc.results, Number.isNaN(time) ? defaults.timeframe : time, args[2] ? args[2].toLowerCase() === 'true' : defaults.include_stablity);
+    const sorted_input = advise(args[0], count, args[2] ? args[2].toLowerCase() === 'true' : defaults.include_stablity, volume_cap);
 
     /*
     item_index

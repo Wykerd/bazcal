@@ -53,6 +53,10 @@ export async function cache_flip () {
     const groups = {};
     
     auction_cache.forEach(item => {
+        const extra = groups[item.extra];
+
+        if (extra.split(' ').includes('Rune') || extra.split(' ').includes('Book')) return;
+
         if (!groups[item.extra]) {
             groups[item.extra] = [ item ];
             return;
@@ -76,7 +80,9 @@ export async function cache_flip () {
 
         const profit_gap = median - bid_price;
 
-        gaps.push([groups[item].filter(it => (it.highest_bid_amount || it.starting_bid) === lowest_price), profit_gap, bid_price]);
+        const lowest_price_filter = (it) = (it.highest_bid_amount || it.starting_bid) === lowest_price
+
+        gaps.push([groups[item].filter(it => lowest_price_filter(it)), profit_gap, bid_price]);
     }
 
     sorted_flips.splice(0, sorted_flips.length, ...gaps.sort((a,b) => b[1] - a[1]));
