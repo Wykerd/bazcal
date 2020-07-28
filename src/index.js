@@ -33,7 +33,7 @@ mongoose.connect('mongodb://root:example@mongo:27017/', { useNewUrlParser: true,
         // Starts the web-app for Bazcal
         app.listen(process.env.PORT ?? 80, () => console.log('Express server started!'))
         // Starts the auction cache process
-        await cache_flip();
+        //await cache_flip();
     })
     .catch(err => {
         throw err

@@ -147,6 +147,8 @@ export function advise(balance, count = 6, include_stablity = true, volume_cap =
         return b.eprofit - a.eprofit
     })
 
+    console.log(sorted[0]);
+
     // Check if it should be filtered
     if (include_stablity) {
         // Define filter conditions
