@@ -1,3 +1,5 @@
+**I'VE STOPPED MAINTAINING THIS PROJECT IN FAVOR OF BAZCAL REX WHICH SOURCE WILL BE RELEASED SOON**
+
 # Bazcal Bot
 
 A highly customizable discord bot for Hypixel bazaar trading.
