@@ -1,5 +1,6 @@
-**I'VE STOPPED MAINTAINING THIS PROJECT IN FAVOR OF BAZCAL REX WHICH SOURCE WILL BE RELEASED SOON**
-
+___
+**IMPORTANT: This version of Bazcal (1.0) has been discontinued. I will no longer maintain it to focus rather on the new native implimentation available here: https://github.com/Wykerd/bazcal-lf, I suggest that you use and contribute to it instead.**
+___
 # Bazcal Bot
 
 A highly customizable discord bot for Hypixel bazaar trading.
